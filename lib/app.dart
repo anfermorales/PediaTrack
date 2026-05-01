@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:pediatrack/core/constants/app_constants.dart';
 import 'package:pediatrack/core/theme/app_theme.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
@@ -32,56 +33,95 @@ class MainNavigation extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationState extends ConsumerState<MainNavigation> {
-  int _selectedIndex = 0;
-
-  final _screens = const [
-    HomeScreen(),
-    GrowthScreen(),
-    HabitsScreen(),
-    AlertsScreen(),
-  ];
+  Future<bool> _onWillPop() async {
+    final currentIndex = ref.read(navigationIndexProvider);
+    if (currentIndex != 0) {
+      ref.read(navigationIndexProvider.notifier).state = 0;
+      return false;
+    }
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Salir'),
+        content: const Text('¿Estás seguro de que quieres salir de PediaTrack?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Salir'),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     final alertsCount = ref.watch(unprocessedAlertsCountProvider);
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.show_chart_outlined),
-            selectedIcon: Icon(Icons.show_chart),
-            label: 'Crecimiento',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.bathroom_outlined),
-            selectedIcon: Icon(Icons.bathroom),
-            label: 'Hábitos',
-          ),
-          NavigationDestination(
-            icon: Badge(
-              isLabelVisible: alertsCount > 0,
-              label: Text('$alertsCount'),
-              child: const Icon(Icons.notifications_outlined),
+    final currentIndex = ref.watch(navigationIndexProvider);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: currentIndex,
+          children: const [
+            HomeScreen(),
+            GrowthScreen(),
+            HabitsScreen(),
+            VaccinesScreen(),
+            AlertsScreen(),
+          ],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: currentIndex,
+          onDestinationSelected: (index) => ref.read(navigationIndexProvider.notifier).state = index,
+          destinations: [
+            const NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
+              label: 'Inicio',
             ),
-            selectedIcon: Badge(
-              isLabelVisible: alertsCount > 0,
-              label: Text('$alertsCount'),
-              child: const Icon(Icons.notifications),
+            const NavigationDestination(
+              icon: Icon(Icons.show_chart_outlined),
+              selectedIcon: Icon(Icons.show_chart),
+              label: 'Crecimiento',
             ),
-            label: 'Alertas',
-          ),
-        ],
+            const NavigationDestination(
+              icon: Icon(Icons.bathroom_outlined),
+              selectedIcon: Icon(Icons.bathroom),
+              label: 'Hábitos',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.vaccines_outlined),
+              selectedIcon: Icon(Icons.vaccines),
+              label: 'Vacunas',
+            ),
+            NavigationDestination(
+              icon: Badge(
+                isLabelVisible: alertsCount > 0,
+                label: Text('$alertsCount'),
+                child: const Icon(Icons.notifications_outlined),
+              ),
+              selectedIcon: Badge(
+                isLabelVisible: alertsCount > 0,
+                label: Text('$alertsCount'),
+                child: const Icon(Icons.notifications),
+              ),
+              label: 'Alertas',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -172,6 +212,9 @@ class HomeScreen extends ConsumerWidget {
       ),
       SliverToBoxAdapter(
         child: _TodayHabitsCard(childId: childId),
+      ),
+      SliverToBoxAdapter(
+        child: _VaccineSummaryCard(childId: childId),
       ),
       SliverToBoxAdapter(
         child: _QuickActionsCard(childId),
@@ -781,6 +824,107 @@ class _TodayHabitsCard extends ConsumerWidget {
   String _habitLabel(int type) => switch (type) { 0 => 'Normal', 1 => 'Estreñimiento', _ => 'Diarrea' };
 }
 
+String _formatVaccineAge(int months) {
+  if (months == 0) return 'al nacer';
+  if (months == 1) return 'al mes';
+  if (months < 12) return 'a los $months meses';
+  if (months == 12) return 'al año';
+  final years = months ~/ 12;
+  final remainingMonths = months % 12;
+  if (remainingMonths == 0) return 'a los $years años';
+  if (remainingMonths == 1) return 'a los $years años y 1 mes';
+  return 'a los $years años y $remainingMonths meses';
+}
+
+class _VaccineSummaryCard extends ConsumerWidget {
+  const _VaccineSummaryCard({required this.childId});
+
+  final int childId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheduleAsync = ref.watch(vaccineScheduleProvider(childId));
+
+    return scheduleAsync.when(
+      data: (schedule) {
+        final overdue = schedule.where((s) => s.isOverdue).length;
+        final upcoming = schedule.where((s) => !s.isCompleted && !s.isOverdue).length;
+        final completed = schedule.where((s) => s.isCompleted).length;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _InfoCard(
+            icon: Icons.vaccines,
+            title: 'Vacunas',
+            subtitle: '$completed completadas, $upcoming próximas, $overdue atrasadas',
+            color: Colors.teal,
+            onTap: () => ref.read(navigationIndexProvider.notifier).state = 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (overdue > 0)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.warning, color: Colors.red, size: 20),
+                        const SizedBox(width: 8),
+                        Text('$overdue vacuna(s) atrasada(s)', style: const TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                if (upcoming > 0)
+                  Text(
+                    '$upcoming vacuna(s) próxima(s) en el mes',
+                    style: TextStyle(color: Colors.orange[700]),
+                  ),
+                const SizedBox(height: 8),
+                ...schedule.take(3).where((s) => !s.isCompleted).map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            item.isOverdue ? Icons.warning : Icons.schedule,
+                            size: 16,
+                            color: item.isOverdue ? Colors.red : Colors.orange,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${item.definition.name} ${item.definition.totalDoses > 1 ? "(${item.definition.doseNumber}/${item.definition.totalDoses})" : ""} - ${item.definition.description ?? ""}',
+                              style: const TextStyle(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '${DateFormat('dd MMM', 'es').format(item.dueDate)} (${_formatVaccineAge(item.definition.recommendedAgeMonths)})',
+                            style: TextStyle(fontSize: 11, color: item.isOverdue ? Colors.red : Colors.grey),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text('Error: $e'),
+      ),
+    );
+  }
+}
+
 class _QuickActionsCard extends ConsumerWidget {
   const _QuickActionsCard(this.childId);
 
@@ -805,10 +949,10 @@ class _QuickActionsCard extends ConsumerWidget {
               onTap: () => _showQuickRecord(context, ref, 0),
             ),
             _QuickActionButton(
-              icon: Icons.height,
-              label: 'Estatura',
+              icon: Icons.straighten,
+              label: 'Medidas',
               color: Colors.green,
-              onTap: () => _showQuickRecord(context, ref, 1),
+              onTap: () => _showQuickRecordMeasures(context, ref),
             ),
             _QuickActionButton(
               icon: Icons.bathroom,
@@ -822,12 +966,140 @@ class _QuickActionsCard extends ConsumerWidget {
     );
   }
 
+  void _showQuickRecordMeasures(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _MeasureRecordSheet(childId: childId),
+    );
+  }
+
   void _showQuickRecord(BuildContext context, WidgetRef ref, int tab) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (context) => QuickRecordSheet(childId: childId, initialTab: tab),
     );
+  }
+}
+
+class _MeasureRecordSheet extends ConsumerStatefulWidget {
+  const _MeasureRecordSheet({required this.childId});
+
+  final int childId;
+
+  @override
+  ConsumerState<_MeasureRecordSheet> createState() => _MeasureRecordSheetState();
+}
+
+class _MeasureRecordSheetState extends ConsumerState<_MeasureRecordSheet> {
+  final _heightController = TextEditingController();
+  final _headController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            ),
+            const SizedBox(height: 16),
+            Text('Registrar Medidas', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            _buildDateSelector(),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _heightController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Estatura (cm)',
+                prefixIcon: Icon(Icons.height),
+                suffixText: 'cm',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _headController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Perímetro craneal (cm)',
+                prefixIcon: Icon(Icons.circle_outlined),
+                suffixText: 'cm',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('Ambos campos son opcionales', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _saveMeasures,
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateSelector() {
+    return ListTile(
+      title: const Text('Fecha'),
+      subtitle: Text(DateFormat('dd MMM yyyy', 'es').format(_selectedDate)),
+      trailing: const Icon(Icons.calendar_today),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Colors.grey[300]!)),
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          initialDate: _selectedDate,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+        );
+        if (date != null) setState(() => _selectedDate = date);
+      },
+    );
+  }
+
+  Future<void> _saveMeasures() async {
+    final heightValue = double.tryParse(_heightController.text);
+    final headValue = double.tryParse(_headController.text);
+
+    if (heightValue == null && headValue == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa al menos una medida')),
+      );
+      return;
+    }
+
+    final db = ref.read(databaseProvider);
+
+    if (heightValue != null && heightValue > 0) {
+      await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+        childId: widget.childId,
+        height: drift.Value(heightValue),
+        date: _selectedDate,
+      ));
+    }
+
+    if (headValue != null && headValue > 0) {
+      await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+        childId: widget.childId,
+        headCircumference: drift.Value(headValue),
+        date: _selectedDate,
+      ));
+    }
+
+    ref.invalidate(growthRecordsStreamProvider(widget.childId));
+
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Medidas registradas')));
+    }
   }
 }
 
@@ -874,6 +1146,7 @@ class _InfoCard extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.child,
+    this.onTap,
   });
 
   final IconData icon;
@@ -881,44 +1154,50 @@ class _InfoCard extends StatelessWidget {
   final String subtitle;
   final Color color;
   final Widget child;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline)),
-                  ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
+                if (onTap != null)
+                  Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.outline),
+              ],
+            ),
+            const SizedBox(height: 16),
+            child,
+          ],
+        ),
       ),
     );
   }
@@ -1703,6 +1982,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
   late int _currentTab;
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
+  final _headController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -1757,10 +2037,11 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: SegmentedButton<int>(
+                  showSelectedIcon: false,
                   segments: const [
-                    ButtonSegment(value: 0, icon: Icon(Icons.monitor_weight), label: Text('Peso')),
-                    ButtonSegment(value: 1, icon: Icon(Icons.height), label: Text('Estatura')),
-                    ButtonSegment(value: 2, icon: Icon(Icons.bathroom), label: Text('Hábito')),
+                    ButtonSegment(value: 0, icon: Icon(Icons.monitor_weight), label: Text('Peso', overflow: TextOverflow.ellipsis)),
+                    ButtonSegment(value: 1, icon: Icon(Icons.straighten), label: Text('Medidas', overflow: TextOverflow.ellipsis)),
+                    ButtonSegment(value: 2, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
                   ],
                   selected: {_currentTab},
                   onSelectionChanged: (set) => setState(() => _currentTab = set.first),
@@ -1772,7 +2053,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: switch (_currentTab) {
                     0 => _buildWeightForm(),
-                    1 => _buildHeightForm(),
+                    1 => _buildMeasuresForm(),
                     2 => _buildHabitForm(),
                     _ => const SizedBox(),
                   },
@@ -1814,12 +2095,12 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     );
   }
 
-  Widget _buildHeightForm() {
+  Widget _buildMeasuresForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 16),
-        Text('Registrar Estatura', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+        Text('Registrar Medidas', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         _buildDateSelector(),
         const SizedBox(height: 16),
@@ -1831,16 +2112,64 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
             prefixIcon: Icon(Icons.height),
             suffixText: 'cm',
           ),
-          autofocus: true,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _headController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Perímetro craneal (cm)',
+            prefixIcon: Icon(Icons.circle_outlined),
+            suffixText: 'cm',
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text('Ambos campos son opcionales', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        const SizedBox(height: 16),
         FilledButton.icon(
-          onPressed: () => _saveGrowth(false),
+          onPressed: _saveMeasuresCombined,
           icon: const Icon(Icons.save),
-          label: const Text('Guardar Estatura'),
+          label: const Text('Guardar'),
         ),
       ],
     );
+  }
+
+  Future<void> _saveMeasuresCombined() async {
+    final heightValue = double.tryParse(_heightController.text);
+    final headValue = double.tryParse(_headController.text);
+
+    if (heightValue == null && headValue == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa al menos una medida')),
+      );
+      return;
+    }
+
+    final db = ref.read(databaseProvider);
+
+    if (heightValue != null && heightValue > 0) {
+      await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+        childId: widget.childId,
+        height: drift.Value(heightValue),
+        date: _selectedDate,
+      ));
+    }
+
+    if (headValue != null && headValue > 0) {
+      await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+        childId: widget.childId,
+        headCircumference: drift.Value(headValue),
+        date: _selectedDate,
+      ));
+    }
+
+    ref.invalidate(growthRecordsStreamProvider(widget.childId));
+
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Medidas registradas')));
+    }
   }
 
   Widget _buildHabitForm() {
@@ -1953,6 +2282,31 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     }
   }
 
+  Future<void> _saveGrowthHead() async {
+    final value = double.tryParse(_headController.text);
+
+    if (value == null || value <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa un valor válido')),
+      );
+      return;
+    }
+
+    final db = ref.read(databaseProvider);
+    await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+      childId: widget.childId,
+      headCircumference: drift.Value(value),
+      date: _selectedDate,
+    ));
+
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Perímetro craneal registrado exitosamente')),
+      );
+    }
+  }
+
   Future<void> _saveHabit(int type) async {
     final db = ref.read(databaseProvider);
     await db.insertHabitRecord(HabitRecordsCompanion.insert(
@@ -2022,6 +2376,397 @@ class _HabitOptionCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class VaccinesScreen extends ConsumerWidget {
+  const VaccinesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedChildId = ref.watch(selectedChildIdProvider);
+
+    if (selectedChildId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Vacunas')),
+        body: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.vaccines, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text('Selecciona un niño para ver sus vacunas'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final childAsync = ref.watch(childProvider(selectedChildId));
+    final scheduleAsync = ref.watch(vaccineScheduleProvider(selectedChildId));
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Vacunas')),
+      body: childAsync.when(
+        data: (child) {
+          if (child == null) return const Center(child: Text('Niño no encontrado'));
+
+          return scheduleAsync.when(
+            data: (schedule) {
+              final overdue = schedule.where((s) => s.isOverdue).toList()
+                ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+              final upcoming = schedule.where((s) => !s.isCompleted && !s.isOverdue).toList()
+                ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+              final completed = schedule.where((s) => s.isCompleted).toList();
+
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  if (overdue.isNotEmpty) ...[
+                    _SectionHeader(title: 'Atrasadas', color: Colors.red, count: overdue.length),
+                    ...overdue.map((item) => _VaccineCard(item: item, childId: selectedChildId)),
+                    const SizedBox(height: 16),
+                  ],
+                  _SectionHeader(title: 'Próximas', color: Colors.orange, count: upcoming.length),
+                  ...upcoming.take(5).map((item) => _VaccineCard(item: item, childId: selectedChildId)),
+                  const SizedBox(height: 16),
+                  _SectionHeader(title: 'Completadas', color: Colors.green, count: completed.length),
+                  ...completed.take(10).map((item) => _VaccineCard(item: item, childId: selectedChildId)),
+                ],
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Error: $e')),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+      ),
+      floatingActionButton: selectedChildId != null
+          ? FloatingActionButton.extended(
+              onPressed: () => _showAddVaccineDialog(context, ref, selectedChildId),
+              icon: const Icon(Icons.add),
+              label: const Text('Registrar'),
+            )
+          : null,
+    );
+  }
+
+  void _showAddVaccineDialog(BuildContext context, WidgetRef ref, int childId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _AddVaccineSheet(childId: childId),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.color, required this.count});
+
+  final String title;
+  final Color color;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(width: 8, height: 24, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+          const SizedBox(width: 8),
+          Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+            child: Text('$count', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VaccineCard extends ConsumerWidget {
+  const _VaccineCard({required this.item, required this.childId});
+
+  final VaccineScheduleItem item;
+  final int childId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statusColor = item.isCompleted ? Colors.green : (item.isOverdue ? Colors.red : Colors.orange);
+    final statusIcon = item.isCompleted ? Icons.check_circle : (item.isOverdue ? Icons.warning : Icons.schedule);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: () => item.isCompleted ? _showEditAppliedDialog(context, ref) : _showMarkAppliedDialog(context, ref),
+        borderRadius: BorderRadius.circular(12),
+        child: ListTile(
+          leading: CircleAvatar(backgroundColor: statusColor.withValues(alpha: 0.2), child: Icon(statusIcon, color: statusColor)),
+          title: Text(
+                item.definition.totalDoses > 1
+                    ? '${item.definition.name} (${item.definition.doseNumber}/${item.definition.totalDoses})'
+                    : item.definition.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (item.definition.description != null) Text(item.definition.description!, style: const TextStyle(fontSize: 12)),
+              Text(
+                item.isCompleted
+                    ? 'Aplicada: ${DateFormat('dd MMM yyyy', 'es').format(item.appliedVaccine!.appliedDate)}'
+                    : 'Fecha: ${DateFormat('dd MMM yyyy', 'es').format(item.dueDate)} (${_formatVaccineAge(item.definition.recommendedAgeMonths)})',
+                style: TextStyle(fontSize: 11, color: statusColor),
+              ),
+            ],
+          ),
+          trailing: item.isCompleted
+              ? IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () => _deleteVaccine(context, ref))
+              : IconButton(icon: const Icon(Icons.check, color: Colors.green), onPressed: () => _showMarkAppliedDialog(context, ref)),
+          isThreeLine: true,
+        ),
+      ),
+    );
+  }
+
+  void _showMarkAppliedDialog(BuildContext context, WidgetRef ref) {
+    DateTime selectedDate = DateTime.now();
+    final batchController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Registrar ${item.definition.name}'),
+              if (item.definition.totalDoses > 1)
+                Text(
+                  item.definition.description ?? 'Dosis ${item.definition.doseNumber}/${item.definition.totalDoses}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.normal),
+                ),
+              Text(
+                _formatVaccineAge(item.definition.recommendedAgeMonths),
+                style: TextStyle(fontSize: 12, color: Colors.grey[500], fontWeight: FontWeight.normal),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('Fecha de aplicación'),
+                subtitle: Text(DateFormat('dd MMM yyyy', 'es').format(selectedDate)),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final date = await showDatePicker(context: context, initialDate: selectedDate, firstDate: DateTime(2020), lastDate: DateTime.now());
+                  if (date != null) setState(() => selectedDate = date);
+                },
+              ),
+              const SizedBox(height: 8),
+              TextField(controller: batchController, decoration: const InputDecoration(labelText: 'Lote (opcional)', border: OutlineInputBorder())),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
+            FilledButton(
+              onPressed: () async {
+                final db = ref.read(databaseProvider);
+                await db.insertChildVaccine(ChildVaccinesCompanion.insert(
+                  childId: childId,
+                  vaccineDefinitionId: item.definition.id,
+                  appliedDate: selectedDate,
+                  batch: batchController.text.isEmpty ? const drift.Value(null) : drift.Value(batchController.text),
+                ));
+                ref.invalidate(vaccineScheduleProvider(childId));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacuna registrada')));
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _deleteVaccine(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar registro'),
+        content: const Text('¿Estás seguro de eliminar esta vacuna aplicada?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              final db = ref.read(databaseProvider);
+              await db.deleteChildVaccine(item.appliedVaccine!.id);
+              ref.invalidate(vaccineScheduleProvider(childId));
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditAppliedDialog(BuildContext context, WidgetRef ref) {
+    DateTime selectedDate = item.appliedVaccine!.appliedDate;
+    final batchController = TextEditingController(text: item.appliedVaccine!.batch ?? '');
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Editar ${item.definition.name}'),
+              if (item.definition.totalDoses > 1)
+                Text(
+                  item.definition.description ?? 'Dosis ${item.definition.doseNumber}/${item.definition.totalDoses}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.normal),
+                ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('Fecha de aplicación'),
+                subtitle: Text(DateFormat('dd MMM yyyy', 'es').format(selectedDate)),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final date = await showDatePicker(context: context, initialDate: selectedDate, firstDate: DateTime(2020), lastDate: DateTime.now());
+                  if (date != null) setState(() => selectedDate = date);
+                },
+              ),
+              const SizedBox(height: 8),
+              TextField(controller: batchController, decoration: const InputDecoration(labelText: 'Lote (opcional)', border: OutlineInputBorder())),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancelar')),
+            FilledButton(
+              onPressed: () async {
+                final db = ref.read(databaseProvider);
+                await db.deleteChildVaccine(item.appliedVaccine!.id);
+                await db.insertChildVaccine(ChildVaccinesCompanion.insert(
+                  childId: childId,
+                  vaccineDefinitionId: item.definition.id,
+                  appliedDate: selectedDate,
+                  batch: batchController.text.isEmpty ? const drift.Value(null) : drift.Value(batchController.text),
+                ));
+                ref.invalidate(vaccineScheduleProvider(childId));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacuna actualizada')));
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddVaccineSheet extends ConsumerStatefulWidget {
+  const _AddVaccineSheet({required this.childId});
+
+  final int childId;
+
+  @override
+  ConsumerState<_AddVaccineSheet> createState() => _AddVaccineSheetState();
+}
+
+class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
+  int? _selectedDefinitionId;
+  DateTime _selectedDate = DateTime.now();
+  final _batchController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final definitionsAsync = ref.watch(vaccineDefinitionsProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Text('Registrar Vacuna', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            definitionsAsync.when(
+              data: (definitions) {
+                final grouped = <String, List<VaccineDefinition>>{};
+                for (final def in definitions) {
+                  grouped.putIfAbsent(def.name, () => []).add(def);
+                }
+                return DropdownButtonFormField<int>(
+                  value: _selectedDefinitionId,
+                  decoration: const InputDecoration(labelText: 'Vacuna', border: OutlineInputBorder()),
+                  items: grouped.entries.expand((entry) {
+                    return entry.value.map((def) {
+                      final doseLabel = def.totalDoses == 999 ? '(anual)' : '(${def.doseNumber}/${def.totalDoses})';
+                      return DropdownMenuItem(value: def.id, child: Text('${entry.key} $doseLabel'));
+                    });
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedDefinitionId = value),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error: $e'),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              title: const Text('Fecha de aplicación'),
+              subtitle: Text(DateFormat('dd MMM yyyy', 'es').format(_selectedDate)),
+              trailing: const Icon(Icons.calendar_today),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Colors.grey[300]!)),
+              onTap: () async {
+                final date = await showDatePicker(context: context, initialDate: _selectedDate, firstDate: DateTime(2020), lastDate: DateTime.now());
+                if (date != null) setState(() => _selectedDate = date);
+              },
+            ),
+            const SizedBox(height: 16),
+            TextField(controller: _batchController, decoration: const InputDecoration(labelText: 'Lote (opcional)', border: OutlineInputBorder())),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: _selectedDefinitionId == null ? null : () async {
+                final db = ref.read(databaseProvider);
+                await db.insertChildVaccine(ChildVaccinesCompanion.insert(
+                  childId: widget.childId,
+                  vaccineDefinitionId: _selectedDefinitionId!,
+                  appliedDate: _selectedDate,
+                  batch: _batchController.text.isEmpty ? const drift.Value(null) : drift.Value(_batchController.text),
+                ));
+                ref.invalidate(vaccineScheduleProvider(widget.childId));
+                if (mounted) Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacuna registrada')));
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
         ),
       ),
     );

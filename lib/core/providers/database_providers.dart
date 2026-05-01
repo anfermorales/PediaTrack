@@ -36,6 +36,8 @@ final todayHabitsProvider =
 
 final selectedChildIdProvider = StateProvider<int?>((ref) => null);
 
+final navigationIndexProvider = StateProvider<int>((ref) => 0);
+
 final unprocessedAlertsCountProvider = Provider<int>((ref) => 0);
 
 class GrowthEvaluationParams {
@@ -80,3 +82,63 @@ final growthEvaluationProvider = Provider.family<GrowthEvaluationResult, GrowthE
     );
   },
 );
+
+final vaccineDefinitionsProvider = StreamProvider<List<VaccineDefinition>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchAllVaccineDefinitions();
+});
+
+final childVaccinesProvider =
+    StreamProvider.family<List<ChildVaccine>, int>((ref, childId) {
+  final db = ref.watch(databaseProvider);
+  return db.watchChildVaccines(childId);
+});
+
+class VaccineScheduleItem {
+  final VaccineDefinition definition;
+  final ChildVaccine? appliedVaccine;
+  final DateTime dueDate;
+  final bool isOverdue;
+  final bool isCompleted;
+
+  VaccineScheduleItem({
+    required this.definition,
+    this.appliedVaccine,
+    required this.dueDate,
+    required this.isOverdue,
+    required this.isCompleted,
+  });
+}
+
+final vaccineScheduleProvider = FutureProvider.family<List<VaccineScheduleItem>, int>((ref, childId) async {
+  final db = ref.watch(databaseProvider);
+  final child = await db.getChildById(childId);
+  if (child == null) return [];
+
+  final definitions = await db.getAllVaccineDefinitions();
+  final appliedVaccines = await db.getChildVaccines(childId);
+
+  final ageInMonths = DateTime.now().difference(child.birthDate).inDays ~/ 30;
+
+  final schedule = <VaccineScheduleItem>[];
+  for (final def in definitions) {
+    final applied = appliedVaccines
+        .where((av) => av.vaccineDefinitionId == def.id)
+        .toList();
+
+    final isCompleted = applied.isNotEmpty;
+    final dueDate = child.birthDate.add(Duration(days: def.recommendedAgeMonths * 30));
+    final isOverdue = !isCompleted && DateTime.now().isAfter(dueDate);
+
+    schedule.add(VaccineScheduleItem(
+      definition: def,
+      appliedVaccine: applied.isNotEmpty ? applied.first : null,
+      dueDate: dueDate,
+      isOverdue: isOverdue,
+      isCompleted: isCompleted,
+    ));
+  }
+
+  schedule.sort((a, b) => a.dueDate.compareTo(b.dueDate));
+  return schedule;
+});

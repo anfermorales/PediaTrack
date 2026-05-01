@@ -437,6 +437,12 @@ class $GrowthRecordsTable extends GrowthRecords
   late final GeneratedColumn<double> height = GeneratedColumn<double>(
       'height', aliasedName, true,
       type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _headCircumferenceMeta =
+      const VerificationMeta('headCircumference');
+  @override
+  late final GeneratedColumn<double> headCircumference =
+      GeneratedColumn<double>('head_circumference', aliasedName, true,
+          type: DriftSqlType.double, requiredDuringInsert: false);
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
@@ -457,7 +463,7 @@ class $GrowthRecordsTable extends GrowthRecords
       defaultValue: currentDateAndTime);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, childId, weight, height, date, notes, createdAt];
+      [id, childId, weight, height, headCircumference, date, notes, createdAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -484,6 +490,12 @@ class $GrowthRecordsTable extends GrowthRecords
     if (data.containsKey('height')) {
       context.handle(_heightMeta,
           height.isAcceptableOrUnknown(data['height']!, _heightMeta));
+    }
+    if (data.containsKey('head_circumference')) {
+      context.handle(
+          _headCircumferenceMeta,
+          headCircumference.isAcceptableOrUnknown(
+              data['head_circumference']!, _headCircumferenceMeta));
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -516,6 +528,8 @@ class $GrowthRecordsTable extends GrowthRecords
           .read(DriftSqlType.double, data['${effectivePrefix}weight']),
       height: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}height']),
+      headCircumference: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}head_circumference']),
       date: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       notes: attachedDatabase.typeMapping
@@ -536,6 +550,7 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
   final int childId;
   final double? weight;
   final double? height;
+  final double? headCircumference;
   final DateTime date;
   final String? notes;
   final DateTime createdAt;
@@ -544,6 +559,7 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
       required this.childId,
       this.weight,
       this.height,
+      this.headCircumference,
       required this.date,
       this.notes,
       required this.createdAt});
@@ -557,6 +573,9 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
     }
     if (!nullToAbsent || height != null) {
       map['height'] = Variable<double>(height);
+    }
+    if (!nullToAbsent || headCircumference != null) {
+      map['head_circumference'] = Variable<double>(headCircumference);
     }
     map['date'] = Variable<DateTime>(date);
     if (!nullToAbsent || notes != null) {
@@ -574,6 +593,9 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
           weight == null && nullToAbsent ? const Value.absent() : Value(weight),
       height:
           height == null && nullToAbsent ? const Value.absent() : Value(height),
+      headCircumference: headCircumference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(headCircumference),
       date: Value(date),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
@@ -589,6 +611,8 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
       childId: serializer.fromJson<int>(json['childId']),
       weight: serializer.fromJson<double?>(json['weight']),
       height: serializer.fromJson<double?>(json['height']),
+      headCircumference:
+          serializer.fromJson<double?>(json['headCircumference']),
       date: serializer.fromJson<DateTime>(json['date']),
       notes: serializer.fromJson<String?>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -602,6 +626,7 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
       'childId': serializer.toJson<int>(childId),
       'weight': serializer.toJson<double?>(weight),
       'height': serializer.toJson<double?>(height),
+      'headCircumference': serializer.toJson<double?>(headCircumference),
       'date': serializer.toJson<DateTime>(date),
       'notes': serializer.toJson<String?>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -613,6 +638,7 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
           int? childId,
           Value<double?> weight = const Value.absent(),
           Value<double?> height = const Value.absent(),
+          Value<double?> headCircumference = const Value.absent(),
           DateTime? date,
           Value<String?> notes = const Value.absent(),
           DateTime? createdAt}) =>
@@ -621,6 +647,9 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
         childId: childId ?? this.childId,
         weight: weight.present ? weight.value : this.weight,
         height: height.present ? height.value : this.height,
+        headCircumference: headCircumference.present
+            ? headCircumference.value
+            : this.headCircumference,
         date: date ?? this.date,
         notes: notes.present ? notes.value : this.notes,
         createdAt: createdAt ?? this.createdAt,
@@ -632,6 +661,7 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
           ..write('childId: $childId, ')
           ..write('weight: $weight, ')
           ..write('height: $height, ')
+          ..write('headCircumference: $headCircumference, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt')
@@ -640,8 +670,8 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, childId, weight, height, date, notes, createdAt);
+  int get hashCode => Object.hash(
+      id, childId, weight, height, headCircumference, date, notes, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -650,6 +680,7 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
           other.childId == this.childId &&
           other.weight == this.weight &&
           other.height == this.height &&
+          other.headCircumference == this.headCircumference &&
           other.date == this.date &&
           other.notes == this.notes &&
           other.createdAt == this.createdAt);
@@ -660,6 +691,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
   final Value<int> childId;
   final Value<double?> weight;
   final Value<double?> height;
+  final Value<double?> headCircumference;
   final Value<DateTime> date;
   final Value<String?> notes;
   final Value<DateTime> createdAt;
@@ -668,6 +700,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
     this.childId = const Value.absent(),
     this.weight = const Value.absent(),
     this.height = const Value.absent(),
+    this.headCircumference = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -677,6 +710,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
     required int childId,
     this.weight = const Value.absent(),
     this.height = const Value.absent(),
+    this.headCircumference = const Value.absent(),
     required DateTime date,
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -687,6 +721,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
     Expression<int>? childId,
     Expression<double>? weight,
     Expression<double>? height,
+    Expression<double>? headCircumference,
     Expression<DateTime>? date,
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
@@ -696,6 +731,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
       if (childId != null) 'child_id': childId,
       if (weight != null) 'weight': weight,
       if (height != null) 'height': height,
+      if (headCircumference != null) 'head_circumference': headCircumference,
       if (date != null) 'date': date,
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
@@ -707,6 +743,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
       Value<int>? childId,
       Value<double?>? weight,
       Value<double?>? height,
+      Value<double?>? headCircumference,
       Value<DateTime>? date,
       Value<String?>? notes,
       Value<DateTime>? createdAt}) {
@@ -715,6 +752,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
       childId: childId ?? this.childId,
       weight: weight ?? this.weight,
       height: height ?? this.height,
+      headCircumference: headCircumference ?? this.headCircumference,
       date: date ?? this.date,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
@@ -736,6 +774,9 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
     if (height.present) {
       map['height'] = Variable<double>(height.value);
     }
+    if (headCircumference.present) {
+      map['head_circumference'] = Variable<double>(headCircumference.value);
+    }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
@@ -755,6 +796,7 @@ class GrowthRecordsCompanion extends UpdateCompanion<GrowthRecord> {
           ..write('childId: $childId, ')
           ..write('weight: $weight, ')
           ..write('height: $height, ')
+          ..write('headCircumference: $headCircumference, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt')
@@ -1091,18 +1133,777 @@ class HabitRecordsCompanion extends UpdateCompanion<HabitRecord> {
   }
 }
 
+class $VaccineDefinitionsTable extends VaccineDefinitions
+    with TableInfo<$VaccineDefinitionsTable, VaccineDefinition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VaccineDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _doseNumberMeta =
+      const VerificationMeta('doseNumber');
+  @override
+  late final GeneratedColumn<int> doseNumber = GeneratedColumn<int>(
+      'dose_number', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _totalDosesMeta =
+      const VerificationMeta('totalDoses');
+  @override
+  late final GeneratedColumn<int> totalDoses = GeneratedColumn<int>(
+      'total_doses', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _recommendedAgeMonthsMeta =
+      const VerificationMeta('recommendedAgeMonths');
+  @override
+  late final GeneratedColumn<int> recommendedAgeMonths = GeneratedColumn<int>(
+      'recommended_age_months', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+      'category', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        description,
+        doseNumber,
+        totalDoses,
+        recommendedAgeMonths,
+        category
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'vaccine_definitions';
+  @override
+  VerificationContext validateIntegrity(Insertable<VaccineDefinition> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('dose_number')) {
+      context.handle(
+          _doseNumberMeta,
+          doseNumber.isAcceptableOrUnknown(
+              data['dose_number']!, _doseNumberMeta));
+    } else if (isInserting) {
+      context.missing(_doseNumberMeta);
+    }
+    if (data.containsKey('total_doses')) {
+      context.handle(
+          _totalDosesMeta,
+          totalDoses.isAcceptableOrUnknown(
+              data['total_doses']!, _totalDosesMeta));
+    } else if (isInserting) {
+      context.missing(_totalDosesMeta);
+    }
+    if (data.containsKey('recommended_age_months')) {
+      context.handle(
+          _recommendedAgeMonthsMeta,
+          recommendedAgeMonths.isAcceptableOrUnknown(
+              data['recommended_age_months']!, _recommendedAgeMonthsMeta));
+    } else if (isInserting) {
+      context.missing(_recommendedAgeMonthsMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VaccineDefinition map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VaccineDefinition(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      doseNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}dose_number'])!,
+      totalDoses: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}total_doses'])!,
+      recommendedAgeMonths: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}recommended_age_months'])!,
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+    );
+  }
+
+  @override
+  $VaccineDefinitionsTable createAlias(String alias) {
+    return $VaccineDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class VaccineDefinition extends DataClass
+    implements Insertable<VaccineDefinition> {
+  final int id;
+  final String name;
+  final String? description;
+  final int doseNumber;
+  final int totalDoses;
+  final int recommendedAgeMonths;
+  final String category;
+  const VaccineDefinition(
+      {required this.id,
+      required this.name,
+      this.description,
+      required this.doseNumber,
+      required this.totalDoses,
+      required this.recommendedAgeMonths,
+      required this.category});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['dose_number'] = Variable<int>(doseNumber);
+    map['total_doses'] = Variable<int>(totalDoses);
+    map['recommended_age_months'] = Variable<int>(recommendedAgeMonths);
+    map['category'] = Variable<String>(category);
+    return map;
+  }
+
+  VaccineDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return VaccineDefinitionsCompanion(
+      id: Value(id),
+      name: Value(name),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      doseNumber: Value(doseNumber),
+      totalDoses: Value(totalDoses),
+      recommendedAgeMonths: Value(recommendedAgeMonths),
+      category: Value(category),
+    );
+  }
+
+  factory VaccineDefinition.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VaccineDefinition(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String?>(json['description']),
+      doseNumber: serializer.fromJson<int>(json['doseNumber']),
+      totalDoses: serializer.fromJson<int>(json['totalDoses']),
+      recommendedAgeMonths:
+          serializer.fromJson<int>(json['recommendedAgeMonths']),
+      category: serializer.fromJson<String>(json['category']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String?>(description),
+      'doseNumber': serializer.toJson<int>(doseNumber),
+      'totalDoses': serializer.toJson<int>(totalDoses),
+      'recommendedAgeMonths': serializer.toJson<int>(recommendedAgeMonths),
+      'category': serializer.toJson<String>(category),
+    };
+  }
+
+  VaccineDefinition copyWith(
+          {int? id,
+          String? name,
+          Value<String?> description = const Value.absent(),
+          int? doseNumber,
+          int? totalDoses,
+          int? recommendedAgeMonths,
+          String? category}) =>
+      VaccineDefinition(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        description: description.present ? description.value : this.description,
+        doseNumber: doseNumber ?? this.doseNumber,
+        totalDoses: totalDoses ?? this.totalDoses,
+        recommendedAgeMonths: recommendedAgeMonths ?? this.recommendedAgeMonths,
+        category: category ?? this.category,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('VaccineDefinition(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('doseNumber: $doseNumber, ')
+          ..write('totalDoses: $totalDoses, ')
+          ..write('recommendedAgeMonths: $recommendedAgeMonths, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, description, doseNumber, totalDoses,
+      recommendedAgeMonths, category);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VaccineDefinition &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.doseNumber == this.doseNumber &&
+          other.totalDoses == this.totalDoses &&
+          other.recommendedAgeMonths == this.recommendedAgeMonths &&
+          other.category == this.category);
+}
+
+class VaccineDefinitionsCompanion extends UpdateCompanion<VaccineDefinition> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String?> description;
+  final Value<int> doseNumber;
+  final Value<int> totalDoses;
+  final Value<int> recommendedAgeMonths;
+  final Value<String> category;
+  const VaccineDefinitionsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.doseNumber = const Value.absent(),
+    this.totalDoses = const Value.absent(),
+    this.recommendedAgeMonths = const Value.absent(),
+    this.category = const Value.absent(),
+  });
+  VaccineDefinitionsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.description = const Value.absent(),
+    required int doseNumber,
+    required int totalDoses,
+    required int recommendedAgeMonths,
+    required String category,
+  })  : name = Value(name),
+        doseNumber = Value(doseNumber),
+        totalDoses = Value(totalDoses),
+        recommendedAgeMonths = Value(recommendedAgeMonths),
+        category = Value(category);
+  static Insertable<VaccineDefinition> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<int>? doseNumber,
+    Expression<int>? totalDoses,
+    Expression<int>? recommendedAgeMonths,
+    Expression<String>? category,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (doseNumber != null) 'dose_number': doseNumber,
+      if (totalDoses != null) 'total_doses': totalDoses,
+      if (recommendedAgeMonths != null)
+        'recommended_age_months': recommendedAgeMonths,
+      if (category != null) 'category': category,
+    });
+  }
+
+  VaccineDefinitionsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String?>? description,
+      Value<int>? doseNumber,
+      Value<int>? totalDoses,
+      Value<int>? recommendedAgeMonths,
+      Value<String>? category}) {
+    return VaccineDefinitionsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      doseNumber: doseNumber ?? this.doseNumber,
+      totalDoses: totalDoses ?? this.totalDoses,
+      recommendedAgeMonths: recommendedAgeMonths ?? this.recommendedAgeMonths,
+      category: category ?? this.category,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (doseNumber.present) {
+      map['dose_number'] = Variable<int>(doseNumber.value);
+    }
+    if (totalDoses.present) {
+      map['total_doses'] = Variable<int>(totalDoses.value);
+    }
+    if (recommendedAgeMonths.present) {
+      map['recommended_age_months'] = Variable<int>(recommendedAgeMonths.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VaccineDefinitionsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('doseNumber: $doseNumber, ')
+          ..write('totalDoses: $totalDoses, ')
+          ..write('recommendedAgeMonths: $recommendedAgeMonths, ')
+          ..write('category: $category')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ChildVaccinesTable extends ChildVaccines
+    with TableInfo<$ChildVaccinesTable, ChildVaccine> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChildVaccinesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _childIdMeta =
+      const VerificationMeta('childId');
+  @override
+  late final GeneratedColumn<int> childId = GeneratedColumn<int>(
+      'child_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES children (id)'));
+  static const VerificationMeta _vaccineDefinitionIdMeta =
+      const VerificationMeta('vaccineDefinitionId');
+  @override
+  late final GeneratedColumn<int> vaccineDefinitionId = GeneratedColumn<int>(
+      'vaccine_definition_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES vaccine_definitions (id)'));
+  static const VerificationMeta _appliedDateMeta =
+      const VerificationMeta('appliedDate');
+  @override
+  late final GeneratedColumn<DateTime> appliedDate = GeneratedColumn<DateTime>(
+      'applied_date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _batchMeta = const VerificationMeta('batch');
+  @override
+  late final GeneratedColumn<String> batch = GeneratedColumn<String>(
+      'batch', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, childId, vaccineDefinitionId, appliedDate, batch, notes, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'child_vaccines';
+  @override
+  VerificationContext validateIntegrity(Insertable<ChildVaccine> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('child_id')) {
+      context.handle(_childIdMeta,
+          childId.isAcceptableOrUnknown(data['child_id']!, _childIdMeta));
+    } else if (isInserting) {
+      context.missing(_childIdMeta);
+    }
+    if (data.containsKey('vaccine_definition_id')) {
+      context.handle(
+          _vaccineDefinitionIdMeta,
+          vaccineDefinitionId.isAcceptableOrUnknown(
+              data['vaccine_definition_id']!, _vaccineDefinitionIdMeta));
+    } else if (isInserting) {
+      context.missing(_vaccineDefinitionIdMeta);
+    }
+    if (data.containsKey('applied_date')) {
+      context.handle(
+          _appliedDateMeta,
+          appliedDate.isAcceptableOrUnknown(
+              data['applied_date']!, _appliedDateMeta));
+    } else if (isInserting) {
+      context.missing(_appliedDateMeta);
+    }
+    if (data.containsKey('batch')) {
+      context.handle(
+          _batchMeta, batch.isAcceptableOrUnknown(data['batch']!, _batchMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChildVaccine map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChildVaccine(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      childId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}child_id'])!,
+      vaccineDefinitionId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}vaccine_definition_id'])!,
+      appliedDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}applied_date'])!,
+      batch: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}batch']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $ChildVaccinesTable createAlias(String alias) {
+    return $ChildVaccinesTable(attachedDatabase, alias);
+  }
+}
+
+class ChildVaccine extends DataClass implements Insertable<ChildVaccine> {
+  final int id;
+  final int childId;
+  final int vaccineDefinitionId;
+  final DateTime appliedDate;
+  final String? batch;
+  final String? notes;
+  final DateTime createdAt;
+  const ChildVaccine(
+      {required this.id,
+      required this.childId,
+      required this.vaccineDefinitionId,
+      required this.appliedDate,
+      this.batch,
+      this.notes,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['child_id'] = Variable<int>(childId);
+    map['vaccine_definition_id'] = Variable<int>(vaccineDefinitionId);
+    map['applied_date'] = Variable<DateTime>(appliedDate);
+    if (!nullToAbsent || batch != null) {
+      map['batch'] = Variable<String>(batch);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ChildVaccinesCompanion toCompanion(bool nullToAbsent) {
+    return ChildVaccinesCompanion(
+      id: Value(id),
+      childId: Value(childId),
+      vaccineDefinitionId: Value(vaccineDefinitionId),
+      appliedDate: Value(appliedDate),
+      batch:
+          batch == null && nullToAbsent ? const Value.absent() : Value(batch),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ChildVaccine.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChildVaccine(
+      id: serializer.fromJson<int>(json['id']),
+      childId: serializer.fromJson<int>(json['childId']),
+      vaccineDefinitionId:
+          serializer.fromJson<int>(json['vaccineDefinitionId']),
+      appliedDate: serializer.fromJson<DateTime>(json['appliedDate']),
+      batch: serializer.fromJson<String?>(json['batch']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'childId': serializer.toJson<int>(childId),
+      'vaccineDefinitionId': serializer.toJson<int>(vaccineDefinitionId),
+      'appliedDate': serializer.toJson<DateTime>(appliedDate),
+      'batch': serializer.toJson<String?>(batch),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ChildVaccine copyWith(
+          {int? id,
+          int? childId,
+          int? vaccineDefinitionId,
+          DateTime? appliedDate,
+          Value<String?> batch = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt}) =>
+      ChildVaccine(
+        id: id ?? this.id,
+        childId: childId ?? this.childId,
+        vaccineDefinitionId: vaccineDefinitionId ?? this.vaccineDefinitionId,
+        appliedDate: appliedDate ?? this.appliedDate,
+        batch: batch.present ? batch.value : this.batch,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('ChildVaccine(')
+          ..write('id: $id, ')
+          ..write('childId: $childId, ')
+          ..write('vaccineDefinitionId: $vaccineDefinitionId, ')
+          ..write('appliedDate: $appliedDate, ')
+          ..write('batch: $batch, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, childId, vaccineDefinitionId, appliedDate, batch, notes, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChildVaccine &&
+          other.id == this.id &&
+          other.childId == this.childId &&
+          other.vaccineDefinitionId == this.vaccineDefinitionId &&
+          other.appliedDate == this.appliedDate &&
+          other.batch == this.batch &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class ChildVaccinesCompanion extends UpdateCompanion<ChildVaccine> {
+  final Value<int> id;
+  final Value<int> childId;
+  final Value<int> vaccineDefinitionId;
+  final Value<DateTime> appliedDate;
+  final Value<String?> batch;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  const ChildVaccinesCompanion({
+    this.id = const Value.absent(),
+    this.childId = const Value.absent(),
+    this.vaccineDefinitionId = const Value.absent(),
+    this.appliedDate = const Value.absent(),
+    this.batch = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  ChildVaccinesCompanion.insert({
+    this.id = const Value.absent(),
+    required int childId,
+    required int vaccineDefinitionId,
+    required DateTime appliedDate,
+    this.batch = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  })  : childId = Value(childId),
+        vaccineDefinitionId = Value(vaccineDefinitionId),
+        appliedDate = Value(appliedDate);
+  static Insertable<ChildVaccine> custom({
+    Expression<int>? id,
+    Expression<int>? childId,
+    Expression<int>? vaccineDefinitionId,
+    Expression<DateTime>? appliedDate,
+    Expression<String>? batch,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (childId != null) 'child_id': childId,
+      if (vaccineDefinitionId != null)
+        'vaccine_definition_id': vaccineDefinitionId,
+      if (appliedDate != null) 'applied_date': appliedDate,
+      if (batch != null) 'batch': batch,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  ChildVaccinesCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? childId,
+      Value<int>? vaccineDefinitionId,
+      Value<DateTime>? appliedDate,
+      Value<String?>? batch,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt}) {
+    return ChildVaccinesCompanion(
+      id: id ?? this.id,
+      childId: childId ?? this.childId,
+      vaccineDefinitionId: vaccineDefinitionId ?? this.vaccineDefinitionId,
+      appliedDate: appliedDate ?? this.appliedDate,
+      batch: batch ?? this.batch,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (childId.present) {
+      map['child_id'] = Variable<int>(childId.value);
+    }
+    if (vaccineDefinitionId.present) {
+      map['vaccine_definition_id'] = Variable<int>(vaccineDefinitionId.value);
+    }
+    if (appliedDate.present) {
+      map['applied_date'] = Variable<DateTime>(appliedDate.value);
+    }
+    if (batch.present) {
+      map['batch'] = Variable<String>(batch.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChildVaccinesCompanion(')
+          ..write('id: $id, ')
+          ..write('childId: $childId, ')
+          ..write('vaccineDefinitionId: $vaccineDefinitionId, ')
+          ..write('appliedDate: $appliedDate, ')
+          ..write('batch: $batch, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
   late final $ChildrenTable children = $ChildrenTable(this);
   late final $GrowthRecordsTable growthRecords = $GrowthRecordsTable(this);
   late final $HabitRecordsTable habitRecords = $HabitRecordsTable(this);
+  late final $VaccineDefinitionsTable vaccineDefinitions =
+      $VaccineDefinitionsTable(this);
+  late final $ChildVaccinesTable childVaccines = $ChildVaccinesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [children, growthRecords, habitRecords];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        children,
+        growthRecords,
+        habitRecords,
+        vaccineDefinitions,
+        childVaccines
+      ];
 }
 
 typedef $$ChildrenTableInsertCompanionBuilder = ChildrenCompanion Function({
@@ -1268,6 +2069,19 @@ class $$ChildrenTableFilterComposer
                 $state.db.habitRecords, joinBuilder, parentComposers)));
     return f(composer);
   }
+
+  ComposableFilter childVaccinesRefs(
+      ComposableFilter Function($$ChildVaccinesTableFilterComposer f) f) {
+    final $$ChildVaccinesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.childVaccines,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder, parentComposers) =>
+            $$ChildVaccinesTableFilterComposer(ComposerState($state.db,
+                $state.db.childVaccines, joinBuilder, parentComposers)));
+    return f(composer);
+  }
 }
 
 class $$ChildrenTableOrderingComposer
@@ -1320,6 +2134,7 @@ typedef $$GrowthRecordsTableInsertCompanionBuilder = GrowthRecordsCompanion
   required int childId,
   Value<double?> weight,
   Value<double?> height,
+  Value<double?> headCircumference,
   required DateTime date,
   Value<String?> notes,
   Value<DateTime> createdAt,
@@ -1330,6 +2145,7 @@ typedef $$GrowthRecordsTableUpdateCompanionBuilder = GrowthRecordsCompanion
   Value<int> childId,
   Value<double?> weight,
   Value<double?> height,
+  Value<double?> headCircumference,
   Value<DateTime> date,
   Value<String?> notes,
   Value<DateTime> createdAt,
@@ -1359,6 +2175,7 @@ class $$GrowthRecordsTableTableManager extends RootTableManager<
             Value<int> childId = const Value.absent(),
             Value<double?> weight = const Value.absent(),
             Value<double?> height = const Value.absent(),
+            Value<double?> headCircumference = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<String?> notes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
@@ -1368,6 +2185,7 @@ class $$GrowthRecordsTableTableManager extends RootTableManager<
             childId: childId,
             weight: weight,
             height: height,
+            headCircumference: headCircumference,
             date: date,
             notes: notes,
             createdAt: createdAt,
@@ -1377,6 +2195,7 @@ class $$GrowthRecordsTableTableManager extends RootTableManager<
             required int childId,
             Value<double?> weight = const Value.absent(),
             Value<double?> height = const Value.absent(),
+            Value<double?> headCircumference = const Value.absent(),
             required DateTime date,
             Value<String?> notes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
@@ -1386,6 +2205,7 @@ class $$GrowthRecordsTableTableManager extends RootTableManager<
             childId: childId,
             weight: weight,
             height: height,
+            headCircumference: headCircumference,
             date: date,
             notes: notes,
             createdAt: createdAt,
@@ -1420,6 +2240,11 @@ class $$GrowthRecordsTableFilterComposer
 
   ColumnFilters<double> get height => $state.composableBuilder(
       column: $state.table.height,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<double> get headCircumference => $state.composableBuilder(
+      column: $state.table.headCircumference,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -1466,6 +2291,11 @@ class $$GrowthRecordsTableOrderingComposer
 
   ColumnOrderings<double> get height => $state.composableBuilder(
       column: $state.table.height,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<double> get headCircumference => $state.composableBuilder(
+      column: $state.table.headCircumference,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
@@ -1664,6 +2494,395 @@ class $$HabitRecordsTableOrderingComposer
   }
 }
 
+typedef $$VaccineDefinitionsTableInsertCompanionBuilder
+    = VaccineDefinitionsCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<String?> description,
+  required int doseNumber,
+  required int totalDoses,
+  required int recommendedAgeMonths,
+  required String category,
+});
+typedef $$VaccineDefinitionsTableUpdateCompanionBuilder
+    = VaccineDefinitionsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String?> description,
+  Value<int> doseNumber,
+  Value<int> totalDoses,
+  Value<int> recommendedAgeMonths,
+  Value<String> category,
+});
+
+class $$VaccineDefinitionsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $VaccineDefinitionsTable,
+    VaccineDefinition,
+    $$VaccineDefinitionsTableFilterComposer,
+    $$VaccineDefinitionsTableOrderingComposer,
+    $$VaccineDefinitionsTableProcessedTableManager,
+    $$VaccineDefinitionsTableInsertCompanionBuilder,
+    $$VaccineDefinitionsTableUpdateCompanionBuilder> {
+  $$VaccineDefinitionsTableTableManager(
+      _$AppDatabase db, $VaccineDefinitionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$VaccineDefinitionsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer: $$VaccineDefinitionsTableOrderingComposer(
+              ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$VaccineDefinitionsTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<int> doseNumber = const Value.absent(),
+            Value<int> totalDoses = const Value.absent(),
+            Value<int> recommendedAgeMonths = const Value.absent(),
+            Value<String> category = const Value.absent(),
+          }) =>
+              VaccineDefinitionsCompanion(
+            id: id,
+            name: name,
+            description: description,
+            doseNumber: doseNumber,
+            totalDoses: totalDoses,
+            recommendedAgeMonths: recommendedAgeMonths,
+            category: category,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<String?> description = const Value.absent(),
+            required int doseNumber,
+            required int totalDoses,
+            required int recommendedAgeMonths,
+            required String category,
+          }) =>
+              VaccineDefinitionsCompanion.insert(
+            id: id,
+            name: name,
+            description: description,
+            doseNumber: doseNumber,
+            totalDoses: totalDoses,
+            recommendedAgeMonths: recommendedAgeMonths,
+            category: category,
+          ),
+        ));
+}
+
+class $$VaccineDefinitionsTableProcessedTableManager
+    extends ProcessedTableManager<
+        _$AppDatabase,
+        $VaccineDefinitionsTable,
+        VaccineDefinition,
+        $$VaccineDefinitionsTableFilterComposer,
+        $$VaccineDefinitionsTableOrderingComposer,
+        $$VaccineDefinitionsTableProcessedTableManager,
+        $$VaccineDefinitionsTableInsertCompanionBuilder,
+        $$VaccineDefinitionsTableUpdateCompanionBuilder> {
+  $$VaccineDefinitionsTableProcessedTableManager(super.$state);
+}
+
+class $$VaccineDefinitionsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $VaccineDefinitionsTable> {
+  $$VaccineDefinitionsTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get doseNumber => $state.composableBuilder(
+      column: $state.table.doseNumber,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get totalDoses => $state.composableBuilder(
+      column: $state.table.totalDoses,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get recommendedAgeMonths => $state.composableBuilder(
+      column: $state.table.recommendedAgeMonths,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get category => $state.composableBuilder(
+      column: $state.table.category,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ComposableFilter childVaccinesRefs(
+      ComposableFilter Function($$ChildVaccinesTableFilterComposer f) f) {
+    final $$ChildVaccinesTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $state.db.childVaccines,
+        getReferencedColumn: (t) => t.vaccineDefinitionId,
+        builder: (joinBuilder, parentComposers) =>
+            $$ChildVaccinesTableFilterComposer(ComposerState($state.db,
+                $state.db.childVaccines, joinBuilder, parentComposers)));
+    return f(composer);
+  }
+}
+
+class $$VaccineDefinitionsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $VaccineDefinitionsTable> {
+  $$VaccineDefinitionsTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get name => $state.composableBuilder(
+      column: $state.table.name,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get description => $state.composableBuilder(
+      column: $state.table.description,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get doseNumber => $state.composableBuilder(
+      column: $state.table.doseNumber,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get totalDoses => $state.composableBuilder(
+      column: $state.table.totalDoses,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get recommendedAgeMonths => $state.composableBuilder(
+      column: $state.table.recommendedAgeMonths,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get category => $state.composableBuilder(
+      column: $state.table.category,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+}
+
+typedef $$ChildVaccinesTableInsertCompanionBuilder = ChildVaccinesCompanion
+    Function({
+  Value<int> id,
+  required int childId,
+  required int vaccineDefinitionId,
+  required DateTime appliedDate,
+  Value<String?> batch,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+});
+typedef $$ChildVaccinesTableUpdateCompanionBuilder = ChildVaccinesCompanion
+    Function({
+  Value<int> id,
+  Value<int> childId,
+  Value<int> vaccineDefinitionId,
+  Value<DateTime> appliedDate,
+  Value<String?> batch,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+});
+
+class $$ChildVaccinesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ChildVaccinesTable,
+    ChildVaccine,
+    $$ChildVaccinesTableFilterComposer,
+    $$ChildVaccinesTableOrderingComposer,
+    $$ChildVaccinesTableProcessedTableManager,
+    $$ChildVaccinesTableInsertCompanionBuilder,
+    $$ChildVaccinesTableUpdateCompanionBuilder> {
+  $$ChildVaccinesTableTableManager(_$AppDatabase db, $ChildVaccinesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$ChildVaccinesTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ChildVaccinesTableOrderingComposer(ComposerState(db, table)),
+          getChildManagerBuilder: (p) =>
+              $$ChildVaccinesTableProcessedTableManager(p),
+          getUpdateCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            Value<int> childId = const Value.absent(),
+            Value<int> vaccineDefinitionId = const Value.absent(),
+            Value<DateTime> appliedDate = const Value.absent(),
+            Value<String?> batch = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              ChildVaccinesCompanion(
+            id: id,
+            childId: childId,
+            vaccineDefinitionId: vaccineDefinitionId,
+            appliedDate: appliedDate,
+            batch: batch,
+            notes: notes,
+            createdAt: createdAt,
+          ),
+          getInsertCompanionBuilder: ({
+            Value<int> id = const Value.absent(),
+            required int childId,
+            required int vaccineDefinitionId,
+            required DateTime appliedDate,
+            Value<String?> batch = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              ChildVaccinesCompanion.insert(
+            id: id,
+            childId: childId,
+            vaccineDefinitionId: vaccineDefinitionId,
+            appliedDate: appliedDate,
+            batch: batch,
+            notes: notes,
+            createdAt: createdAt,
+          ),
+        ));
+}
+
+class $$ChildVaccinesTableProcessedTableManager extends ProcessedTableManager<
+    _$AppDatabase,
+    $ChildVaccinesTable,
+    ChildVaccine,
+    $$ChildVaccinesTableFilterComposer,
+    $$ChildVaccinesTableOrderingComposer,
+    $$ChildVaccinesTableProcessedTableManager,
+    $$ChildVaccinesTableInsertCompanionBuilder,
+    $$ChildVaccinesTableUpdateCompanionBuilder> {
+  $$ChildVaccinesTableProcessedTableManager(super.$state);
+}
+
+class $$ChildVaccinesTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $ChildVaccinesTable> {
+  $$ChildVaccinesTableFilterComposer(super.$state);
+  ColumnFilters<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get appliedDate => $state.composableBuilder(
+      column: $state.table.appliedDate,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get batch => $state.composableBuilder(
+      column: $state.table.batch,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get notes => $state.composableBuilder(
+      column: $state.table.notes,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  $$ChildrenTableFilterComposer get childId {
+    final $$ChildrenTableFilterComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $state.db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$ChildrenTableFilterComposer(ComposerState(
+                $state.db, $state.db.children, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$VaccineDefinitionsTableFilterComposer get vaccineDefinitionId {
+    final $$VaccineDefinitionsTableFilterComposer composer = $state
+        .composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.vaccineDefinitionId,
+            referencedTable: $state.db.vaccineDefinitions,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder, parentComposers) =>
+                $$VaccineDefinitionsTableFilterComposer(ComposerState(
+                    $state.db,
+                    $state.db.vaccineDefinitions,
+                    joinBuilder,
+                    parentComposers)));
+    return composer;
+  }
+}
+
+class $$ChildVaccinesTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $ChildVaccinesTable> {
+  $$ChildVaccinesTableOrderingComposer(super.$state);
+  ColumnOrderings<int> get id => $state.composableBuilder(
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get appliedDate => $state.composableBuilder(
+      column: $state.table.appliedDate,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get batch => $state.composableBuilder(
+      column: $state.table.batch,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get notes => $state.composableBuilder(
+      column: $state.table.notes,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  $$ChildrenTableOrderingComposer get childId {
+    final $$ChildrenTableOrderingComposer composer = $state.composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $state.db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$ChildrenTableOrderingComposer(ComposerState(
+                $state.db, $state.db.children, joinBuilder, parentComposers)));
+    return composer;
+  }
+
+  $$VaccineDefinitionsTableOrderingComposer get vaccineDefinitionId {
+    final $$VaccineDefinitionsTableOrderingComposer composer =
+        $state.composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.vaccineDefinitionId,
+            referencedTable: $state.db.vaccineDefinitions,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder, parentComposers) =>
+                $$VaccineDefinitionsTableOrderingComposer(ComposerState(
+                    $state.db,
+                    $state.db.vaccineDefinitions,
+                    joinBuilder,
+                    parentComposers)));
+    return composer;
+  }
+}
+
 class _$AppDatabaseManager {
   final _$AppDatabase _db;
   _$AppDatabaseManager(this._db);
@@ -1673,4 +2892,8 @@ class _$AppDatabaseManager {
       $$GrowthRecordsTableTableManager(_db, _db.growthRecords);
   $$HabitRecordsTableTableManager get habitRecords =>
       $$HabitRecordsTableTableManager(_db, _db.habitRecords);
+  $$VaccineDefinitionsTableTableManager get vaccineDefinitions =>
+      $$VaccineDefinitionsTableTableManager(_db, _db.vaccineDefinitions);
+  $$ChildVaccinesTableTableManager get childVaccines =>
+      $$ChildVaccinesTableTableManager(_db, _db.childVaccines);
 }

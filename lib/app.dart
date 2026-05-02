@@ -1350,8 +1350,9 @@ class GrowthScreen extends ConsumerWidget {
               controller: weightController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: 'Peso al nacer (lb)',
+                labelText: 'Peso al nacer',
                 prefixIcon: Icon(Icons.monitor_weight),
+                suffixText: 'lb',
               ),
             ),
             const SizedBox(height: 16),
@@ -1359,8 +1360,9 @@ class GrowthScreen extends ConsumerWidget {
               controller: heightController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
-                labelText: 'Estatura al nacer (cm)',
+                labelText: 'Estatura al nacer',
                 prefixIcon: Icon(Icons.height),
+                suffixText: 'cm',
               ),
             ),
           ],
@@ -1835,93 +1837,89 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text('Agregar Niño', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                prefixIcon: Icon(Icons.person),
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.cake),
-              title: const Text('Fecha de Nacimiento'),
-              subtitle: Text(DateFormat('dd MMMM yyyy', 'es').format(_birthDate)),
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: _birthDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) setState(() => _birthDate = date);
-              },
-            ),
-            const SizedBox(height: 16),
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, icon: Icon(Icons.boy), label: Text('Niño')),
-                ButtonSegment(value: 1, icon: Icon(Icons.girl), label: Text('Niña')),
-              ],
-              selected: {_gender},
-              onSelectionChanged: (set) => setState(() => _gender = set.first),
-            ),
-            const SizedBox(height: 24),
-            Text('Datos al Nacer', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _birthWeightController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Peso al nacer (lb)',
-                      prefixIcon: Icon(Icons.monitor_weight),
-                    ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: _birthHeightController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Estatura al nacer (cm)',
-                      prefixIcon: Icon(Icons.height),
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 24),
+              Text('Agregar Niño', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                  prefixIcon: Icon(Icons.person),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _isLoading ? null : _saveChild,
-              child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Guardar'),
-            ),
-            const SizedBox(height: 16),
-          ],
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.cake),
+                title: const Text('Fecha de Nacimiento'),
+                subtitle: Text(DateFormat('dd MMMM yyyy', 'es').format(_birthDate)),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _birthDate,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                  );
+                  if (date != null) setState(() => _birthDate = date);
+                },
+              ),
+              const SizedBox(height: 16),
+              SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(value: 0, icon: Icon(Icons.boy), label: Text('Niño')),
+                  ButtonSegment(value: 1, icon: Icon(Icons.girl), label: Text('Niña')),
+                ],
+                selected: {_gender},
+                onSelectionChanged: (set) => setState(() => _gender = set.first),
+              ),
+              const SizedBox(height: 24),
+              Text('Datos al Nacer', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _birthWeightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Peso al nacer',
+                  prefixIcon: Icon(Icons.monitor_weight),
+                  suffixText: 'lb',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _birthHeightController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Estatura al nacer',
+                  prefixIcon: Icon(Icons.height),
+                  suffixText: 'cm',
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _isLoading ? null : _saveChild,
+                child: _isLoading
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Guardar'),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -2718,20 +2716,59 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
             const SizedBox(height: 16),
             definitionsAsync.when(
               data: (definitions) {
-                final grouped = <String, List<VaccineDefinition>>{};
-                for (final def in definitions) {
-                  grouped.putIfAbsent(def.name, () => []).add(def);
-                }
-                return DropdownButtonFormField<int>(
-                  value: _selectedDefinitionId,
-                  decoration: const InputDecoration(labelText: 'Vacuna', border: OutlineInputBorder()),
-                  items: grouped.entries.expand((entry) {
-                    return entry.value.map((def) {
-                      final doseLabel = def.totalDoses == 999 ? '(anual)' : '(${def.doseNumber}/${def.totalDoses})';
-                      return DropdownMenuItem(value: def.id, child: Text('${entry.key} $doseLabel'));
-                    });
-                  }).toList(),
-                  onChanged: (value) => setState(() => _selectedDefinitionId = value),
+                final sortedDefinitions = List<VaccineDefinition>.from(definitions)
+                  ..sort((a, b) => a.name.compareTo(b.name));
+                return Autocomplete<VaccineDefinition>(
+                  displayStringForOption: (def) {
+                    final doseLabel = def.totalDoses == 999 ? '(anual)' : '(${def.doseNumber}/${def.totalDoses})';
+                    return '${def.name} $doseLabel';
+                  },
+                  optionsBuilder: (textEditingValue) {
+                    if (textEditingValue.text.isEmpty) {
+                      return sortedDefinitions;
+                    }
+                    return sortedDefinitions.where((def) =>
+                      def.name.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  },
+                  onSelected: (def) {
+                    setState(() => _selectedDefinitionId = def.id);
+                  },
+                  fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      decoration: const InputDecoration(
+                        labelText: 'Buscar vacuna',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                    );
+                  },
+                  optionsViewBuilder: (context, onSelected, options) {
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: Material(
+                        elevation: 4,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 300, maxWidth: 400),
+                          child: ListView.builder(
+                            padding: EdgeInsets.zero,
+                            shrinkWrap: true,
+                            itemCount: options.length,
+                            itemBuilder: (context, index) {
+                              final def = options.elementAt(index);
+                              final doseLabel = def.totalDoses == 999 ? '(anual)' : '(${def.doseNumber}/${def.totalDoses})';
+                              return ListTile(
+                                title: Text('${def.name} $doseLabel'),
+                                subtitle: def.description != null ? Text(def.description!) : null,
+                                onTap: () => onSelected(def),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),

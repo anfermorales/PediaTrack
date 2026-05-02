@@ -1,7 +1,8 @@
-import 'package:drift/drift.dart' as drift;
+﻿import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pediatrack/core/constants/app_constants.dart';
 import 'package:pediatrack/core/theme/app_theme.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
@@ -17,6 +18,8 @@ class PediaTrackApp extends ConsumerWidget {
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      supportedLocales: const [Locale('es', 'MX')],
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
@@ -33,30 +36,55 @@ class MainNavigation extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationState extends ConsumerState<MainNavigation> {
-  Future<bool> _onWillPop() async {
-    final currentIndex = ref.read(navigationIndexProvider);
-    if (currentIndex != 0) {
+  bool _handlingBack = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(navigationIndexProvider.notifier).state = 0;
-      return false;
+    });
+  }
+
+  Future<void> _handleBackPressed() async {
+    if (_handlingBack || !mounted) return;
+    _handlingBack = true;
+    try {
+      final currentIndex = ref.read(navigationIndexProvider);
+      if (currentIndex != 0) {
+        ref.read(navigationIndexProvider.notifier).state = 0;
+        return;
+      }
+
+      final shouldPop = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Salir'),
+          content: const Text('¿Estás seguro de que quieres salir de PediaTrack?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Salir'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldPop == true && mounted) {
+        try {
+          await SystemNavigator.pop();
+        } catch (e) {
+          debugPrint('Error calling SystemNavigator.pop(): $e');
+        }
+      }
+    } finally {
+      _handlingBack = false;
     }
-    final shouldPop = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Salir'),
-        content: const Text('¿Estás seguro de que quieres salir de PediaTrack?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Salir'),
-          ),
-        ],
-      ),
-    );
-    return shouldPop ?? false;
   }
 
   @override
@@ -65,12 +93,9 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     final currentIndex = ref.watch(navigationIndexProvider);
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        final shouldPop = await _onWillPop();
-        if (shouldPop && context.mounted) {
-          SystemNavigator.pop();
-        }
+        _handleBackPressed();
       },
       child: Scaffold(
         body: IndexedStack(
@@ -251,7 +276,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Registra a tu primer niño para comenzar a monitorear su crecimiento y hábitos.',
+              'Registra a tu primer niño para comenzar a monitorear su crecimiento y Hábitos.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
@@ -261,7 +286,7 @@ class HomeScreen extends ConsumerWidget {
             FilledButton.icon(
               onPressed: () => _showAddChildDialog(context, ref),
               icon: const Icon(Icons.add),
-              label: const Text('Agregar Primer Niño'),
+              label: const Text('Agregar Primer niño'),
             ),
           ],
         ),
@@ -796,7 +821,7 @@ class _TodayHabitsCard extends ConsumerWidget {
             subtitle: habits.isEmpty ? 'Sin registros hoy' : '${habits.length} registros',
             color: Colors.orange,
             child: habits.isEmpty
-                ? const Text('Registra los hábitos intestinales del día.')
+                ? const Text('Registra los Hábitos intestinales del día.')
                 : Wrap(
                     spacing: 8,
                     children: habits.map((h) => Chip(
@@ -1233,7 +1258,7 @@ class GrowthScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Crecimiento')),
       body: childAsync.when(
         data: (child) {
-          if (child == null) return const Center(child: Text('Niño no encontrado'));
+          if (child == null) return const Center(child: Text('niño no encontrado'));
 
           final ageMonths = _calculateAgeMonths(child.birthDate);
 
@@ -1425,7 +1450,7 @@ class HabitsScreen extends ConsumerWidget {
             children: [
               Icon(Icons.bathroom, size: 64, color: Colors.grey),
               SizedBox(height: 16),
-              Text('Selecciona un niño para ver sus hábitos'),
+              Text('Selecciona un niño para ver sus Hábitos'),
             ],
           ),
         ),
@@ -1444,8 +1469,8 @@ class HabitsScreen extends ConsumerWidget {
             childAsync.when(
               data: (child) => _InfoCard(
                 icon: Icons.child_care,
-                title: child?.name ?? 'Niño',
-                subtitle: 'Control de hábitos intestinales',
+                title: child?.name ?? 'niño',
+                subtitle: 'Control de Hábitos intestinales',
                 color: Colors.orange,
                 child: const SizedBox.shrink(),
               ),
@@ -1488,7 +1513,7 @@ class _HabitStatsCard extends ConsumerWidget {
             color: Colors.purple,
             child: const Padding(
               padding: EdgeInsets.all(16),
-              child: Text('Registra al menos 3 días para ver estadísticas'),
+              child: Text('Registra al menos 3 días para ver Estadísticas'),
             ),
           );
         }
@@ -1775,7 +1800,7 @@ class AlertsScreen extends ConsumerWidget {
                 color: Colors.green.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.check_circle,
                 size: 64,
                 color: Colors.green,
@@ -1853,7 +1878,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Agregar Niño', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text('Agregar niño', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               TextField(
                 controller: _nameController,
@@ -1882,7 +1907,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
               const SizedBox(height: 16),
               SegmentedButton<int>(
                 segments: const [
-                  ButtonSegment(value: 0, icon: Icon(Icons.boy), label: Text('Niño')),
+                  ButtonSegment(value: 0, icon: Icon(Icons.boy), label: Text('niño')),
                   ButtonSegment(value: 1, icon: Icon(Icons.girl), label: Text('Niña')),
                 ],
                 selected: {_gender},
@@ -2179,7 +2204,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         const SizedBox(height: 8),
         _buildDateSelector(),
         const SizedBox(height: 24),
-        Text('¿Cómo fue el hábito intestinal?', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
+        Text('¿Cómo fue el Hábito intestinal?', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -2410,7 +2435,7 @@ class VaccinesScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Vacunas')),
       body: childAsync.when(
         data: (child) {
-          if (child == null) return const Center(child: Text('Niño no encontrado'));
+          if (child == null) return const Center(child: Text('niño no encontrado'));
 
           return scheduleAsync.when(
             data: (schedule) {
@@ -2428,7 +2453,7 @@ class VaccinesScreen extends ConsumerWidget {
                     ...overdue.map((item) => _VaccineCard(item: item, childId: selectedChildId)),
                     const SizedBox(height: 16),
                   ],
-                  _SectionHeader(title: 'Próximas', color: Colors.orange, count: upcoming.length),
+                  _SectionHeader(title: 'próximas', color: Colors.orange, count: upcoming.length),
                   ...upcoming.take(5).map((item) => _VaccineCard(item: item, childId: selectedChildId)),
                   const SizedBox(height: 16),
                   _SectionHeader(title: 'Completadas', color: Colors.green, count: completed.length),
@@ -2809,3 +2834,5 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
     );
   }
 }
+
+

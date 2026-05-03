@@ -152,11 +152,24 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
   }
 }
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  void _showEditChildSheet(BuildContext context, WidgetRef ref, ChildrenData child) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => AddChildSheet(child: child),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final childrenAsync = ref.watch(childrenStreamProvider);
     final selectedChildId = ref.watch(selectedChildIdProvider);
 
@@ -200,6 +213,7 @@ class HomeScreen extends ConsumerWidget {
                   onChildSelected: (id) {
                     ref.read(selectedChildIdProvider.notifier).state = id;
                   },
+                  onChildEdit: (child) => _showEditChildSheet(context, ref, child),
                 ),
               ),
               if (selectedChildId != null)
@@ -316,11 +330,13 @@ class _ChildSelector extends StatelessWidget {
     required this.children,
     required this.selectedChildId,
     required this.onChildSelected,
+    this.onChildEdit,
   });
 
   final List<ChildrenData> children;
   final int? selectedChildId;
   final void Function(int) onChildSelected;
+  final void Function(ChildrenData)? onChildEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -335,6 +351,7 @@ class _ChildSelector extends StatelessWidget {
           final isSelected = child.id == selectedChildId;
           return GestureDetector(
             onTap: () => onChildSelected(child.id),
+            onLongPress: onChildEdit != null ? () => onChildEdit!(child) : null,
             child: Container(
               width: 80,
               margin: const EdgeInsets.only(right: 12),
@@ -1828,7 +1845,9 @@ class AlertsScreen extends ConsumerWidget {
 }
 
 class AddChildSheet extends ConsumerStatefulWidget {
-  const AddChildSheet({super.key});
+  const AddChildSheet({super.key, this.child});
+
+  final ChildrenData? child;
 
   @override
   ConsumerState<AddChildSheet> createState() => _AddChildSheetState();
@@ -1838,9 +1857,30 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
   final _nameController = TextEditingController();
   final _birthWeightController = TextEditingController();
   final _birthHeightController = TextEditingController();
-  DateTime _birthDate = DateTime.now().subtract(const Duration(days: 365));
-  int _gender = 0;
+  late DateTime _birthDate;
+  late int _gender;
   bool _isLoading = false;
+
+  bool get _isEditing => widget.child != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _nameController.text = widget.child!.name;
+      _birthDate = widget.child!.birthDate;
+      _gender = widget.child!.gender;
+      if (widget.child!.birthWeight != null) {
+        _birthWeightController.text = (widget.child!.birthWeight! * 2.20462).toStringAsFixed(2);
+      }
+      if (widget.child!.birthHeight != null) {
+        _birthHeightController.text = widget.child!.birthHeight!.toStringAsFixed(1);
+      }
+    } else {
+      _birthDate = DateTime.now().subtract(const Duration(days: 365));
+      _gender = 0;
+    }
+  }
 
   @override
   void dispose() {
@@ -1878,7 +1918,10 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Agregar niño', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                _isEditing ? 'Editar niño' : 'Agregar niño',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 24),
               TextField(
                 controller: _nameController,
@@ -1954,7 +1997,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ingresa el nombre del niño')),
-      );
+);
       return;
     }
 
@@ -1965,19 +2008,35 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
       final birthWeightLb = double.tryParse(_birthWeightController.text);
       final birthHeightCm = double.tryParse(_birthHeightController.text);
 
-      await db.insertChild(ChildrenCompanion.insert(
-        name: _nameController.text.trim(),
-        birthDate: _birthDate,
-        gender: _gender,
-        birthWeight: birthWeightLb != null ? drift.Value(birthWeightLb / 2.20462) : const drift.Value.absent(),
-        birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
-      ));
-
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${_nameController.text.trim()} agregado exitosamente')),
+      if (_isEditing) {
+        final updatedChild = widget.child!.copyWith(
+          name: _nameController.text.trim(),
+          birthDate: _birthDate,
+          gender: _gender,
+          birthWeight: birthWeightLb != null ? drift.Value(birthWeightLb / 2.20462) : const drift.Value.absent(),
+          birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
         );
+        await db.updateChild(updatedChild);
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${_nameController.text.trim()} actualizado exitosamente')),
+          );
+        }
+      } else {
+        await db.insertChild(ChildrenCompanion.insert(
+          name: _nameController.text.trim(),
+          birthDate: _birthDate,
+          gender: _gender,
+          birthWeight: birthWeightLb != null ? drift.Value(birthWeightLb / 2.20462) : const drift.Value.absent(),
+          birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
+        ));
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${_nameController.text.trim()} agregado exitosamente')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

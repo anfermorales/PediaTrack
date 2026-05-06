@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pediatrack/core/constants/app_constants.dart';
 import 'package:pediatrack/core/theme/app_theme.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
+import 'package:pediatrack/core/services/who_growth_service.dart';
+import 'package:pediatrack/core/widgets/who_growth_chart.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -1306,53 +1308,113 @@ class GrowthScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _InfoCard(
-                  icon: Icons.analytics,
-                  title: 'Historial de Crecimiento',
-                  subtitle: '$ageMonths meses de edad',
-                  color: Colors.green,
-                  child: growthAsync.when(
-                    data: (records) {
-                      if (records.isEmpty) {
-                        return const Padding(
+                growthAsync.when(
+                  data: (records) {
+                    if (records.isEmpty) {
+                      return _InfoCard(
+                        icon: Icons.show_chart,
+                        title: 'Curvas de Crecimiento OMS',
+                        subtitle: 'Sin registros de crecimiento',
+                        color: Colors.green,
+                        child: const Padding(
                           padding: EdgeInsets.all(16),
-                          child: Text('Sin registros de crecimiento'),
-                        );
-                      }
-                      return Column(
-                        children: [
-                          _GrowthChart(records: records.take(20).toList().reversed.toList()),
-                          const SizedBox(height: 16),
-                          const Text('Registros Recientes', style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 8),
-                          ...records.take(10).map((r) => Dismissible(
-                                key: Key(r.id.toString()),
-                                direction: DismissDirection.endToStart,
-                                background: Container(
-                                  color: Colors.red,
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.only(right: 16),
-                                  child: const Icon(Icons.delete, color: Colors.white),
-                                ),
-                                onDismissed: (_) => _deleteGrowthRecord(ref, r.id, selectedChildId),
-                                child: ListTile(
-                                  leading: const Icon(Icons.show_chart),
-                                  title: Text('Peso: ${r.weight != null ? (r.weight! * 2.20462).toStringAsFixed(1) : "-"} lb | Estatura: ${r.height?.toStringAsFixed(1) ?? "-"} cm'),
-                                  subtitle: Text(DateFormat('dd MMM yyyy', 'es').format(r.date)),
-                                  dense: true,
-                                ),
-                              )),
-                        ],
+                          child: Text('Agrega registros de peso y estatura para ver las curvas de crecimiento'),
+                        ),
                       );
-                    },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => Text('Error: $e'),
-),
-              ),
-            ],
-          ),
-        );
-      },
+                    }
+
+                    final weightRecords = records.where((r) => r.weight != null).toList();
+                    final heightRecords = records.where((r) => r.height != null).toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (weightRecords.isNotEmpty) ...[
+                          _InfoCard(
+                            icon: Icons.monitor_weight,
+                            title: 'Curva de Peso',
+                            subtitle: 'Comparación con curvas OMS',
+                            color: Colors.blue,
+                            child: WhoGrowthChart(
+                              childId: selectedChildId,
+                              gender: child.gender,
+                              records: weightRecords.map((r) => WhoGrowthRecord(
+                                id: r.id,
+                                childId: r.childId,
+                                weight: r.weight,
+                                height: r.height,
+                                headCircumference: r.headCircumference,
+                                date: r.date,
+                              )).toList(),
+                              type: GrowthType.weight,
+                              birthDate: child.birthDate,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (heightRecords.isNotEmpty) ...[
+                          _InfoCard(
+                            icon: Icons.height,
+                            title: 'Curva de Estatura',
+                            subtitle: 'Comparación con curvas OMS',
+                            color: Colors.green,
+                            child: WhoGrowthChart(
+                              childId: selectedChildId,
+                              gender: child.gender,
+                              records: heightRecords.map((r) => WhoGrowthRecord(
+                                id: r.id,
+                                childId: r.childId,
+                                weight: r.weight,
+                                height: r.height,
+                                headCircumference: r.headCircumference,
+                                date: r.date,
+                              )).toList(),
+                              type: GrowthType.height,
+                              birthDate: child.birthDate,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        _InfoCard(
+                          icon: Icons.analytics,
+                          title: 'Historial de Crecimiento',
+                          subtitle: '$ageMonths meses de edad',
+                          color: Colors.purple,
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 16),
+                              const Text('Registros Recientes', style: TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              ...records.take(10).map((r) => Dismissible(
+                                    key: Key(r.id.toString()),
+                                    direction: DismissDirection.endToStart,
+                                    background: Container(
+                                      color: Colors.red,
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.only(right: 16),
+                                      child: const Icon(Icons.delete, color: Colors.white),
+                                    ),
+                                    onDismissed: (_) => _deleteGrowthRecord(ref, r.id, selectedChildId),
+                                    child: ListTile(
+                                      leading: const Icon(Icons.show_chart),
+                                      title: Text('Peso: ${r.weight != null ? (r.weight! * 2.20462).toStringAsFixed(1) : "-"} lb | Estatura: ${r.height?.toStringAsFixed(1) ?? "-"} cm'),
+                                      subtitle: Text(DateFormat('dd MMM yyyy', 'es').format(r.date)),
+                                      dense: true,
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+              ],
+            ),
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
@@ -1805,40 +1867,75 @@ class AlertsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final alertsAsync = ref.watch(alertsProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Alertas')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                size: 64,
-                color: Colors.green,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '¡Sin Alertas!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+      body: alertsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (alerts) {
+          if (alerts.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      size: 64,
+                      color: Colors.green,
+                    ),
                   ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'No hay notificaciones pendientes',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
+                  const SizedBox(height: 24),
+                  Text(
+                    '¡Sin Alertas!',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
-            ),
-          ],
-        ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'No hay notificaciones pendientes',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: alerts.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final alert = alerts[index];
+              final (icon, color) = switch (alert.type) {
+                AppAlertType.vaccineOverdue => (Icons.warning_amber_rounded, Colors.red),
+                AppAlertType.vaccineUpcoming => (Icons.schedule, Colors.orange),
+                AppAlertType.growthOutOfRange => (Icons.monitor_heart_outlined, Colors.deepPurple),
+              };
+
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: color.withValues(alpha: 0.15),
+                    child: Icon(icon, color: color),
+                  ),
+                  title: Text(alert.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('${alert.childName}\n${alert.message}'),
+                  isThreeLine: true,
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -1993,7 +2090,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
     );
   }
 
-  Future<void> _saveChild() async {
+Future<void> _saveChild() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ingresa el nombre del niño')),
@@ -2007,13 +2104,14 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
       final db = ref.read(databaseProvider);
       final birthWeightLb = double.tryParse(_birthWeightController.text);
       final birthHeightCm = double.tryParse(_birthHeightController.text);
+      final birthWeightKg = birthWeightLb != null ? birthWeightLb / 2.20462 : null;
 
       if (_isEditing) {
         final updatedChild = widget.child!.copyWith(
           name: _nameController.text.trim(),
           birthDate: _birthDate,
           gender: _gender,
-          birthWeight: birthWeightLb != null ? drift.Value(birthWeightLb / 2.20462) : const drift.Value.absent(),
+          birthWeight: birthWeightKg != null ? drift.Value(birthWeightKg) : const drift.Value.absent(),
           birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
         );
         await db.updateChild(updatedChild);
@@ -2024,13 +2122,23 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
           );
         }
       } else {
-        await db.insertChild(ChildrenCompanion.insert(
+        final childId = await db.insertChild(ChildrenCompanion.insert(
           name: _nameController.text.trim(),
           birthDate: _birthDate,
           gender: _gender,
-          birthWeight: birthWeightLb != null ? drift.Value(birthWeightLb / 2.20462) : const drift.Value.absent(),
+          birthWeight: birthWeightKg != null ? drift.Value(birthWeightKg) : const drift.Value.absent(),
           birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
         ));
+
+        if (birthWeightKg != null || birthHeightCm != null) {
+          await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+            childId: childId,
+            date: _birthDate,
+            weight: birthWeightKg != null ? drift.Value(birthWeightKg) : const drift.Value.absent(),
+            height: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
+          ));
+        }
+
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -2077,6 +2185,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
   void dispose() {
     _weightController.dispose();
     _heightController.dispose();
+    _headController.dispose();
     super.dispose();
   }
 
@@ -2121,9 +2230,8 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
                 child: SegmentedButton<int>(
                   showSelectedIcon: false,
                   segments: const [
-                    ButtonSegment(value: 0, icon: Icon(Icons.monitor_weight), label: Text('Peso', overflow: TextOverflow.ellipsis)),
-                    ButtonSegment(value: 1, icon: Icon(Icons.straighten), label: Text('Medidas', overflow: TextOverflow.ellipsis)),
-                    ButtonSegment(value: 2, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
+                    ButtonSegment(value: 0, icon: Icon(Icons.straighten), label: Text('Consulta', overflow: TextOverflow.ellipsis)),
+                    ButtonSegment(value: 1, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
                   ],
                   selected: {_currentTab},
                   onSelectionChanged: (set) => setState(() => _currentTab = set.first),
@@ -2134,9 +2242,8 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
                   controller: scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: switch (_currentTab) {
-                    0 => _buildWeightForm(),
-                    1 => _buildMeasuresForm(),
-                    2 => _buildHabitForm(),
+                    0 => _buildConsultForm(),
+                    1 => _buildHabitForm(),
                     _ => const SizedBox(),
                   },
                 ),
@@ -2148,14 +2255,16 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     );
   }
 
-  Widget _buildWeightForm() {
+  Widget _buildConsultForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 16),
-        Text('Registrar Peso', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+        Text('Registro de Consulta', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         _buildDateSelector(),
+        const SizedBox(height: 24),
+        Text('Peso, Estatura y Perímetro Craneal', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
         const SizedBox(height: 16),
         TextField(
           controller: _weightController,
@@ -2165,27 +2274,8 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
             prefixIcon: Icon(Icons.monitor_weight),
             suffixText: 'lb',
           ),
-          autofocus: true,
         ),
-        const SizedBox(height: 24),
-        FilledButton.icon(
-          onPressed: () => _saveGrowth(true),
-          icon: const Icon(Icons.save),
-          label: const Text('Guardar Peso'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMeasuresForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 16),
-        Text('Registrar Medidas', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        _buildDateSelector(),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         TextField(
           controller: _heightController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -2206,10 +2296,10 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
           ),
         ),
         const SizedBox(height: 8),
-        Text('Ambos campos son opcionales', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-        const SizedBox(height: 16),
+        Text('Ingresa al menos un valor. Los demás son opcionales.', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        const SizedBox(height: 24),
         FilledButton.icon(
-          onPressed: _saveMeasuresCombined,
+          onPressed: _saveGrowthRecord,
           icon: const Icon(Icons.save),
           label: const Text('Guardar'),
         ),
@@ -2217,18 +2307,30 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     );
   }
 
-  Future<void> _saveMeasuresCombined() async {
+  Future<void> _saveGrowthRecord() async {
+    final weightValue = double.tryParse(_weightController.text);
     final heightValue = double.tryParse(_heightController.text);
     final headValue = double.tryParse(_headController.text);
 
-    if (heightValue == null && headValue == null) {
+    if (weightValue == null && heightValue == null && headValue == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa al menos una medida')),
+        const SnackBar(content: Text('Ingresa al menos un valor')),
       );
       return;
     }
 
     final db = ref.read(databaseProvider);
+    int savedCount = 0;
+
+    if (weightValue != null && weightValue > 0) {
+      final weightKg = weightValue / 2.20462;
+      await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
+        childId: widget.childId,
+        weight: drift.Value(weightKg),
+        date: _selectedDate,
+      ));
+      savedCount++;
+    }
 
     if (heightValue != null && heightValue > 0) {
       await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
@@ -2236,6 +2338,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         height: drift.Value(heightValue),
         date: _selectedDate,
       ));
+      savedCount++;
     }
 
     if (headValue != null && headValue > 0) {
@@ -2244,13 +2347,16 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         headCircumference: drift.Value(headValue),
         date: _selectedDate,
       ));
+      savedCount++;
     }
 
     ref.invalidate(growthRecordsStreamProvider(widget.childId));
 
     if (mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Medidas registradas')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${savedCount > 1 ? "$savedCount registros" : "1 registro"} guardado(s) exitosamente')),
+      );
     }
   }
 
@@ -2337,58 +2443,6 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     );
   }
 
-  Future<void> _saveGrowth(bool isWeight) async {
-    final controller = isWeight ? _weightController : _heightController;
-    final value = double.tryParse(controller.text);
-
-    if (value == null || value <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa un valor válido')),
-      );
-      return;
-    }
-
-    final db = ref.read(databaseProvider);
-    await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
-      childId: widget.childId,
-      weight: isWeight ? drift.Value(value) : const drift.Value.absent(),
-      height: isWeight ? const drift.Value.absent() : drift.Value(value),
-      date: _selectedDate,
-    ));
-
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${isWeight ? "Peso" : "Estatura"} registrado exitosamente')),
-      );
-    }
-  }
-
-  Future<void> _saveGrowthHead() async {
-    final value = double.tryParse(_headController.text);
-
-    if (value == null || value <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa un valor válido')),
-      );
-      return;
-    }
-
-    final db = ref.read(databaseProvider);
-    await db.insertGrowthRecord(GrowthRecordsCompanion.insert(
-      childId: widget.childId,
-      headCircumference: drift.Value(value),
-      date: _selectedDate,
-    ));
-
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Perímetro craneal registrado exitosamente')),
-      );
-    }
-  }
-
   Future<void> _saveHabit(int type) async {
     final db = ref.read(databaseProvider);
     await db.insertHabitRecord(HabitRecordsCompanion.insert(
@@ -2406,7 +2460,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         const SnackBar(content: Text('Hábito registrado exitosamente')),
       );
     }
-  }
+}
 }
 
 class _HabitOptionCard extends StatelessWidget {

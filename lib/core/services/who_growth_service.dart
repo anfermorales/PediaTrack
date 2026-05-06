@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 enum GrowthType { weight, height }
@@ -64,7 +65,9 @@ class WhoGrowthService {
     return (pow(value / M, L) - 1) / (L * S);
   }
 
-  String classifyZScore(double z) => z < -2 ? 'Bajo' : (z <= 2 ? 'Normal' : 'Alto');
+  double percentileToZScore(double percentile) {
+    return _inverseNormalCDF(percentile / 100);
+  }
 
   double zScoreToPercentile(double z) {
     return _normalCDF(z) * 100;
@@ -72,6 +75,20 @@ class WhoGrowthService {
 
   double _normalCDF(double z) {
     return 0.5 * (1 + _erf(z / sqrt(2)));
+  }
+
+  double _inverseNormalCDF(double p) {
+    if (p <= 0) return -3.5;
+    if (p >= 1) return 3.5;
+    if (p == 0.5) return 0;
+    final t = sqrt(-2 * log(p < 0.5 ? p : 1 - p));
+    final c0 = 2.515517;
+    final c1 = 0.802853;
+    final c2 = 0.010328;
+    final d1 = 1.432788;
+    final d2 = 0.189269;
+    final d3 = 0.001308;
+    return (p < 0.5 ? -1 : 1) * (t - ((t * c0 + c1) * t + c2) / (((t * d1 + d2) * t + d3) * t + 1));
   }
 
   double _erf(double x) {
@@ -104,6 +121,18 @@ class WhoGrowthService {
     );
   }
 
+  double valueFromPercentile({required double percentile, required int ageMonths, required int gender, required GrowthType type}) {
+    final data = _getDataForTypeAndGender(type, gender);
+    final params = _interpolateParameters(data, ageMonths.toDouble());
+    final zScore = percentileToZScore(percentile);
+    return _zScoreToValue(zScore: zScore, L: params.L, M: params.M, S: params.S);
+  }
+
+  double _zScoreToValue({required double zScore, required double L, required double M, required double S}) {
+    if (L == 0) return M * exp(S * zScore);
+    return M * pow(1 + L * S * zScore, 1 / L);
+  }
+
   GrowthClassification evaluate({required double value, required int ageMonths, required int gender, required GrowthType type}) {
     final data = _getDataForTypeAndGender(type, gender);
     final params = _interpolateParameters(data, ageMonths.toDouble());
@@ -122,6 +151,80 @@ class WhoGrowthService {
       return gender == 0 ? _heightMale : _heightFemale;
     }
   }
+
+  String classifyZScore(double z) => z < -2 ? 'Bajo' : (z <= 2 ? 'Normal' : 'Alto');
+
+  List<GrowthChartPoint> getPercentileCurve({required int gender, required GrowthType type, required double percentile}) {
+    final data = _getDataForTypeAndGender(type, gender);
+    final List<GrowthChartPoint> points = [];
+    for (int ageMonths = 0; ageMonths <= 60; ageMonths++) {
+      final params = _interpolateParameters(data, ageMonths.toDouble());
+      final zScore = percentileToZScore(percentile);
+      final value = _zScoreToValue(zScore: zScore, L: params.L, M: params.M, S: params.S);
+      points.add(GrowthChartPoint(ageMonths: ageMonths.toDouble(), value: value));
+    }
+    return points;
+  }
+
+  List<GrowthChartData> getAllPercentileCurves({required int gender, required GrowthType type}) {
+    return [
+      GrowthChartData(label: 'P3', percentile: 3, color: Colors.orange),
+      GrowthChartData(label: 'P15', percentile: 15, color: Colors.yellow[700]!),
+      GrowthChartData(label: 'P50', percentile: 50, color: Colors.green),
+      GrowthChartData(label: 'P85', percentile: 85, color: Colors.yellow[700]!),
+      GrowthChartData(label: 'P97', percentile: 97, color: Colors.orange),
+    ];
+  }
+
+  List<ExpectedGrowthRecord> getExpectedRecordsAtMonth({
+    required DateTime birthDate,
+    required int gender,
+    required int fromMonth,
+    required int toMonth,
+  }) {
+    final List<ExpectedGrowthRecord> records = [];
+    for (int month = fromMonth; month <= toMonth; month++) {
+      final weight = valueFromPercentile(percentile: 50, ageMonths: month, gender: gender, type: GrowthType.weight);
+      final height = valueFromPercentile(percentile: 50, ageMonths: month, gender: gender, type: GrowthType.height);
+      final date = DateTime(birthDate.year, birthDate.month + month, birthDate.day);
+      records.add(ExpectedGrowthRecord(
+        ageMonths: month,
+        date: date,
+        weightKg: weight,
+        heightCm: height,
+      ));
+    }
+    return records;
+  }
+}
+
+class ExpectedGrowthRecord {
+  final int ageMonths;
+  final DateTime date;
+  final double weightKg;
+  final double heightCm;
+
+  const ExpectedGrowthRecord({
+    required this.ageMonths,
+    required this.date,
+    required this.weightKg,
+    required this.heightCm,
+  });
+}
+
+class GrowthChartPoint {
+  final double ageMonths;
+  final double value;
+
+  const GrowthChartPoint({required this.ageMonths, required this.value});
+}
+
+class GrowthChartData {
+  final String label;
+  final double percentile;
+  final Color color;
+
+  const GrowthChartData({required this.label, required this.percentile, required this.color});
 }
 
 final whoGrowthService = WhoGrowthService();

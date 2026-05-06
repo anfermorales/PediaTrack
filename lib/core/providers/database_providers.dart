@@ -38,7 +38,127 @@ final selectedChildIdProvider = StateProvider<int?>((ref) => null);
 
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
-final unprocessedAlertsCountProvider = Provider<int>((ref) => 0);
+enum AppAlertType { vaccineOverdue, vaccineUpcoming, growthOutOfRange }
+
+class AppAlert {
+  final AppAlertType type;
+  final int childId;
+  final String childName;
+  final String title;
+  final String message;
+  final DateTime createdAt;
+
+  const AppAlert({
+    required this.type,
+    required this.childId,
+    required this.childName,
+    required this.title,
+    required this.message,
+    required this.createdAt,
+  });
+}
+
+final alertsProvider = FutureProvider<List<AppAlert>>((ref) async {
+  final db = ref.watch(databaseProvider);
+  final service = ref.watch(whoGrowthServiceProvider);
+  final children = await db.getAllChildren();
+  final now = DateTime.now();
+  final upcomingLimit = now.add(const Duration(days: 30));
+  final alerts = <AppAlert>[];
+
+  for (final child in children) {
+    final definitions = await db.getAllVaccineDefinitions();
+    final appliedVaccines = await db.getChildVaccines(child.id);
+
+    for (final def in definitions) {
+      final isApplied = appliedVaccines.any((v) => v.vaccineDefinitionId == def.id);
+      if (isApplied) continue;
+
+      final dueDate = child.birthDate.add(Duration(days: def.recommendedAgeMonths * 30));
+      if (dueDate.isBefore(now)) {
+        alerts.add(AppAlert(
+          type: AppAlertType.vaccineOverdue,
+          childId: child.id,
+          childName: child.name,
+          title: 'Vacuna atrasada',
+          message: '${def.name} (${def.doseNumber}/${def.totalDoses}) debió aplicarse el ${_date(dueDate)}.',
+          createdAt: dueDate,
+        ));
+      } else if (!dueDate.isAfter(upcomingLimit)) {
+        alerts.add(AppAlert(
+          type: AppAlertType.vaccineUpcoming,
+          childId: child.id,
+          childName: child.name,
+          title: 'Vacuna próxima',
+          message: '${def.name} (${def.doseNumber}/${def.totalDoses}) está programada para ${_date(dueDate)}.',
+          createdAt: dueDate,
+        ));
+      }
+    }
+
+    final growthRecords = await db.getGrowthRecordsForChild(child.id);
+    if (growthRecords.isNotEmpty) {
+      final latest = growthRecords.first;
+      final ageMonths = ((now.year - child.birthDate.year) * 12 + (now.month - child.birthDate.month)).clamp(0, 60);
+
+      if (latest.weight != null) {
+        final weightEval = service.evaluate(
+          value: latest.weight!,
+          ageMonths: ageMonths,
+          gender: child.gender,
+          type: GrowthType.weight,
+        );
+        if (weightEval.percentile < 3 || weightEval.percentile > 97) {
+          alerts.add(AppAlert(
+            type: AppAlertType.growthOutOfRange,
+            childId: child.id,
+            childName: child.name,
+            title: 'Peso fuera de curva',
+            message: 'El último peso está en P${weightEval.percentile.toStringAsFixed(0)}. Requiere revisión.',
+            createdAt: latest.date,
+          ));
+        }
+      }
+
+      if (latest.height != null) {
+        final heightEval = service.evaluate(
+          value: latest.height!,
+          ageMonths: ageMonths,
+          gender: child.gender,
+          type: GrowthType.height,
+        );
+        if (heightEval.percentile < 3 || heightEval.percentile > 97) {
+          alerts.add(AppAlert(
+            type: AppAlertType.growthOutOfRange,
+            childId: child.id,
+            childName: child.name,
+            title: 'Estatura fuera de curva',
+            message: 'La última estatura está en P${heightEval.percentile.toStringAsFixed(0)}. Requiere revisión.',
+            createdAt: latest.date,
+          ));
+        }
+      }
+    }
+  }
+
+  alerts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  return alerts;
+});
+
+final unprocessedAlertsCountProvider = Provider<int>((ref) {
+  final alertsAsync = ref.watch(alertsProvider);
+  return alertsAsync.maybeWhen(
+    data: (alerts) => alerts.length,
+    orElse: () => 0,
+  );
+});
+
+String _date(DateTime date) {
+  final d = date.day.toString().padLeft(2, '0');
+  final m = date.month.toString().padLeft(2, '0');
+  final y = date.year.toString();
+  return '$d/$m/$y';
+}
 
 class GrowthEvaluationParams {
   final double value;

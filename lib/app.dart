@@ -8,6 +8,7 @@ import 'package:pediatrack/core/theme/app_theme.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
 import 'package:pediatrack/core/services/backup_export_service.dart';
+import 'package:pediatrack/core/services/auto_backup_scheduler.dart';
 import 'package:pediatrack/core/widgets/who_growth_chart.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:intl/intl.dart';
@@ -1553,6 +1554,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   bool _autoBackupEnabled = false;
   int _backupHour = 23;
   int _backupMinute = 30;
+  String _backupFolder = 'PediaTrack';
   String? _lastBackupAt;
   String? _lastBackupStatus;
   bool _isLoading = true;
@@ -1568,6 +1570,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
     final enabled = await db.getSetting('auto_backup_enabled');
     final hour = await db.getSetting('auto_backup_hour');
     final minute = await db.getSetting('auto_backup_minute');
+    final folder = await db.getSetting('backup_folder');
     final lastRun = await db.getSetting('backup_last_run_at');
     final lastStatus = await db.getSetting('backup_last_status');
 
@@ -1575,6 +1578,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
       _autoBackupEnabled = enabled == 'true';
       _backupHour = int.tryParse(hour ?? '23') ?? 23;
       _backupMinute = int.tryParse(minute ?? '30') ?? 30;
+      _backupFolder = folder ?? 'PediaTrack';
       _lastBackupAt = lastRun;
       _lastBackupStatus = lastStatus;
       _isLoading = false;
@@ -1758,6 +1762,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                                 onChanged: (value) async {
                                   setState(() => _autoBackupEnabled = value);
                                   await _saveSetting('auto_backup_enabled', value.toString());
+                                  await AutoBackupScheduler.syncFromDatabase();
                                 },
                               ),
                               ListTile(
@@ -1778,6 +1783,42 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                                     });
                                     await _saveSetting('auto_backup_hour', time.hour.toString());
                                     await _saveSetting('auto_backup_minute', time.minute.toString());
+                                    await AutoBackupScheduler.syncFromDatabase();
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                title: const Text('Carpeta de respaldo'),
+                                subtitle: Text(_backupFolder),
+                                trailing: const Icon(Icons.folder_outlined),
+                                onTap: () async {
+                                  final controller = TextEditingController(text: _backupFolder);
+                                  final result = await showDialog<String>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Carpeta de respaldo'),
+                                      content: TextField(
+                                        controller: controller,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Nombre de carpeta',
+                                          hintText: 'Ej: PediaTrack',
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.pop(context, controller.text),
+                                          child: const Text('Guardar'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (result != null && result.isNotEmpty) {
+                                    setState(() => _backupFolder = result);
+                                    await _saveSetting('backup_folder', result);
                                   }
                                 },
                               ),

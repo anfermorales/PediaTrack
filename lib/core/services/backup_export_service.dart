@@ -364,7 +364,7 @@ class BackupExportService {
     return buildBackupExcelData(backupData);
   }
 
-  static Future<String> _getBackupDirectory() async {
+  static Future<String> _getBackupDirectory([String? folderName]) async {
     final appDir = await getExternalStorageDirectory();
     if (appDir == null) {
       throw Exception('No se pudo obtener el directorio de almacenamiento');
@@ -376,21 +376,24 @@ class BackupExportService {
     } else {
       basePath = appDir.path;
     }
-    final backupDir = Directory('$basePath/Documents/PediaTrack/backup');
+    final folder = folderName ?? 'PediaTrack';
+    final backupDir = Directory('$basePath/Documents/$folder/backup');
     if (!await backupDir.exists()) {
       await backupDir.create(recursive: true);
     }
     return backupDir.path;
   }
 
-  static Future<BackupFiles> saveBackupFilesLocally() async {
+  static Future<BackupFiles> saveBackupFilesLocally([String? folderName]) async {
     final backupData = await buildBackupData();
     final now = DateTime.now();
     final stamp = now.toIso8601String().replaceAll(':', '-');
     final jsonName = 'pediatrack_backup_$stamp.json';
     final excelName = 'pediatrack_backup_$stamp.xlsx';
 
-    final backupDir = await _getBackupDirectory();
+    final db = AppDatabase();
+    final folder = folderName ?? await db.getSetting('backup_folder') ?? 'PediaTrack';
+    final backupDir = await _getBackupDirectory(folder);
     final jsonFile = File('$backupDir/$jsonName');
     final excelFile = File('$backupDir/$excelName');
 
@@ -429,9 +432,11 @@ class BackupExportService {
     }
   }
 
-  static Future<List<String>> getLocalBackupFiles() async {
+  static Future<List<String>> getLocalBackupFiles([String? folderName]) async {
     try {
-      final backupDir = await _getBackupDirectory();
+      final db = AppDatabase();
+      final folder = folderName ?? await db.getSetting('backup_folder') ?? 'PediaTrack';
+      final backupDir = await _getBackupDirectory(folder);
       final dir = Directory(backupDir);
       if (!await dir.exists()) return [];
 

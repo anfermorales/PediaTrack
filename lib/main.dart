@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:pediatrack/app.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
 import 'package:pediatrack/core/services/notification_service.dart';
+import 'package:pediatrack/core/services/auto_backup_scheduler.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 
@@ -11,6 +12,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await whoGrowthService.loadData();
   await NotificationService.initialize();
+  await AutoBackupScheduler.initialize();
+  await AutoBackupScheduler.syncFromDatabase();
   await _seedChildrenWithExpectedData();
   runApp(
     const ProviderScope(

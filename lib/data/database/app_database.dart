@@ -60,12 +60,20 @@ class ChildVaccines extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
-@DriftDatabase(tables: [Children, GrowthRecords, HabitRecords, VaccineDefinitions, ChildVaccines])
+class Settings extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
+@DriftDatabase(tables: [Children, GrowthRecords, HabitRecords, VaccineDefinitions, ChildVaccines, Settings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -84,6 +92,9 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(vaccineDefinitions);
           await m.createTable(childVaccines);
           await _seedVaccineDefinitions();
+        }
+        if (from < 4) {
+          await m.createTable(settings);
         }
       },
     );
@@ -231,6 +242,111 @@ class AppDatabase extends _$AppDatabase {
 
   Future<VaccineDefinition?> getVaccineDefinitionById(int id) =>
       (select(vaccineDefinitions)..where((v) => v.id.equals(id))).getSingleOrNull();
+
+  Future<String?> getSetting(String key) async {
+    final result = await customSelect(
+      'SELECT value FROM settings WHERE key = ?',
+      variables: [Variable.withString(key)],
+    ).getSingleOrNull();
+    return result?.read<String>('value');
+  }
+
+  Future<void> setSetting(String key, String value) async {
+    await customInsert(
+      'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+      variables: [Variable.withString(key), Variable.withString(value)],
+    );
+  }
+
+  Future<void> importBackupData(Map<String, dynamic> data) async {
+    await transaction(() async {
+      await (delete(children)).go();
+      await (delete(growthRecords)).go();
+      await (delete(habitRecords)).go();
+      await (delete(childVaccines)).go();
+
+      final childrenData = data['children'] as List? ?? [];
+      for (final childMap in childrenData) {
+        final child = ChildrenCompanion.insert(
+          name: childMap['name'] as String,
+          birthDate: DateTime.parse(childMap['birth_date'] as String),
+          gender: childMap['gender'] as int,
+          birthWeight: childMap['birth_weight'] != null
+              ? Value(childMap['birth_weight'] as double)
+              : const Value.absent(),
+          birthHeight: childMap['birth_height'] != null
+              ? Value(childMap['birth_height'] as double)
+              : const Value.absent(),
+        );
+        await into(children).insert(child);
+      }
+
+      final growthData = data['growth_records'] as List? ?? [];
+      for (final recordMap in growthData) {
+        final record = GrowthRecordsCompanion.insert(
+          childId: recordMap['child_id'] as int,
+          date: DateTime.parse(recordMap['date'] as String),
+          weight: recordMap['weight'] != null
+              ? Value(recordMap['weight'] as double)
+              : const Value.absent(),
+          height: recordMap['height'] != null
+              ? Value(recordMap['height'] as double)
+              : const Value.absent(),
+          headCircumference: recordMap['head_circumference'] != null
+              ? Value(recordMap['head_circumference'] as double)
+              : const Value.absent(),
+        );
+        await into(growthRecords).insert(record);
+      }
+
+      final habitData = data['habit_records'] as List? ?? [];
+      for (final recordMap in habitData) {
+        final record = HabitRecordsCompanion.insert(
+          childId: recordMap['child_id'] as int,
+          type: recordMap['type'] as int,
+          recordedAt: DateTime.parse(recordMap['recorded_at'] as String),
+        );
+        await into(habitRecords).insert(record);
+      }
+
+      final vaccineDefsData = data['vaccine_definitions'] as List? ?? [];
+      for (final defMap in vaccineDefsData) {
+        final def = VaccineDefinitionsCompanion.insert(
+          name: defMap['name'] as String,
+          description: defMap['description'] != null
+              ? Value(defMap['description'] as String)
+              : const Value.absent(),
+          doseNumber: defMap['dose_number'] as int,
+          totalDoses: defMap['total_doses'] as int,
+          recommendedAgeMonths: defMap['recommended_age_months'] as int,
+          category: defMap['category'] as String,
+        );
+        await into(vaccineDefinitions).insert(def);
+      }
+
+      final childVaccinesData = data['child_vaccines'] as List? ?? [];
+      for (final vaccineMap in childVaccinesData) {
+        final vaccine = ChildVaccinesCompanion.insert(
+          childId: vaccineMap['child_id'] as int,
+          vaccineDefinitionId: vaccineMap['vaccine_definition_id'] as int,
+          appliedDate: DateTime.parse(vaccineMap['applied_date'] as String),
+          batch: vaccineMap['batch'] != null
+              ? Value(vaccineMap['batch'] as String)
+              : const Value.absent(),
+        );
+        await into(childVaccines).insert(vaccine);
+      }
+    });
+  }
+
+  Future<void> deleteAllData() async {
+    await transaction(() async {
+      await (delete(childVaccines)).go();
+      await (delete(habitRecords)).go();
+      await (delete(growthRecords)).go();
+      await (delete(children)).go();
+    });
+  }
 }
 
 LazyDatabase _openConnection() {

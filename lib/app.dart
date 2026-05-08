@@ -7,10 +7,17 @@ import 'package:pediatrack/core/constants/app_constants.dart';
 import 'package:pediatrack/core/theme/app_theme.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
+import 'package:pediatrack/core/services/backup_export_service.dart';
 import 'package:pediatrack/core/widgets/who_growth_chart.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class PediaTrackApp extends ConsumerWidget {
   const PediaTrackApp({super.key});
@@ -84,9 +91,17 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
           debugPrint('Error calling SystemNavigator.pop(): $e');
         }
       }
-    } finally {
+} finally {
       _handlingBack = false;
     }
+  }
+
+  void _showSettingsSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SettingsSheet(database: ref.read(databaseProvider)),
+    );
   }
 
   @override
@@ -162,6 +177,14 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  void _showSettingsSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SettingsSheet(database: ref.read(databaseProvider)),
+    );
+  }
+
   void _showEditChildSheet(BuildContext context, WidgetRef ref, ChildrenData child) {
     showModalBottomSheet(
       context: context,
@@ -195,6 +218,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => _showSettingsSheet(context, ref),
+          ),
           IconButton(
             icon: const Icon(Icons.person_add_outlined),
             onPressed: () => _showAddChildDialog(context, ref),
@@ -1510,6 +1537,334 @@ class GrowthScreen extends ConsumerWidget {
     final db = ref.read(databaseProvider);
     await db.deleteGrowthRecord(id);
     ref.invalidate(growthRecordsStreamProvider(childId));
+  }
+}
+
+class SettingsSheet extends ConsumerStatefulWidget {
+  const SettingsSheet({super.key, required this.database});
+
+  final AppDatabase database;
+
+  @override
+  ConsumerState<SettingsSheet> createState() => _SettingsSheetState();
+}
+
+class _SettingsSheetState extends ConsumerState<SettingsSheet> {
+  bool _autoBackupEnabled = false;
+  int _backupHour = 23;
+  int _backupMinute = 30;
+  String? _lastBackupAt;
+  String? _lastBackupStatus;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final db = widget.database;
+    final enabled = await db.getSetting('auto_backup_enabled');
+    final hour = await db.getSetting('auto_backup_hour');
+    final minute = await db.getSetting('auto_backup_minute');
+    final lastRun = await db.getSetting('backup_last_run_at');
+    final lastStatus = await db.getSetting('backup_last_status');
+
+    setState(() {
+      _autoBackupEnabled = enabled == 'true';
+      _backupHour = int.tryParse(hour ?? '23') ?? 23;
+      _backupMinute = int.tryParse(minute ?? '30') ?? 30;
+      _lastBackupAt = lastRun;
+      _lastBackupStatus = lastStatus;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveSetting(String key, String value) async {
+    final db = widget.database;
+    await db.setSetting(key, value);
+  }
+
+  Future<void> _runBackupNow() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Generando respaldo...')),
+    );
+
+    try {
+      final files = await BackupExportService.saveBackupFilesLocally();
+      await BackupRunLogService.markRun(
+        status: 'OK',
+        details: 'Respaldo guardado: ${files.jsonFileName}',
+      );
+      await _loadSettings();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Respaldo guardado en: ${files.jsonFilePath}')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportData(String action) async {
+    try {
+      Uint8List bytes;
+      String fileName;
+      String mimeType;
+
+      if (action == 'json') {
+        bytes = await BackupExportService.buildBackupJsonBytes();
+        fileName = 'pediatrack_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+        mimeType = 'application/json';
+      } else {
+        bytes = await BackupExportService.buildBackupExcelBytes();
+        fileName = 'pediatrack_backup_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+        mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsBytes(bytes, flush: true);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: mimeType)],
+        text: 'Respaldo PediaTrack',
+        subject: 'Respaldo PediaTrack',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Archivo listo para compartir')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final selected = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+
+    final path = selected?.files.single.path;
+    if (path == null) return;
+
+    if (!mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Importar respaldo'),
+        content: const Text(
+          'Esto reemplazará todos los datos actuales. ¿Deseas continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Importar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final content = await File(path).readAsString();
+      final decoded = jsonDecode(content);
+
+      if (decoded is! Map<String, dynamic>) {
+        throw Exception('Formato de respaldo inválido');
+      }
+
+      final db = ref.read(databaseProvider);
+      await db.importBackupData(decoded);
+
+      ref.invalidate(childrenStreamProvider);
+      ref.invalidate(selectedChildIdProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Respaldo importado correctamente')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Configuración',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView(
+                        controller: scrollController,
+                        children: [
+                          _buildSection(
+                            title: 'Respaldo Automático',
+                            children: [
+                              SwitchListTile(
+                                title: const Text('Respaldo automático'),
+                                subtitle: const Text('Crear backup cada día'),
+                                value: _autoBackupEnabled,
+                                onChanged: (value) async {
+                                  setState(() => _autoBackupEnabled = value);
+                                  await _saveSetting('auto_backup_enabled', value.toString());
+                                },
+                              ),
+                              ListTile(
+                                title: const Text('Hora del respaldo'),
+                                subtitle: Text(
+                                  '${_backupHour.toString().padLeft(2, '0')}:${_backupMinute.toString().padLeft(2, '0')}',
+                                ),
+                                trailing: const Icon(Icons.schedule),
+                                onTap: () async {
+                                  final time = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay(hour: _backupHour, minute: _backupMinute),
+                                  );
+                                  if (time != null) {
+                                    setState(() {
+                                      _backupHour = time.hour;
+                                      _backupMinute = time.minute;
+                                    });
+                                    await _saveSetting('auto_backup_hour', time.hour.toString());
+                                    await _saveSetting('auto_backup_minute', time.minute.toString());
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                title: const Text('Ejecutar ahora'),
+                                subtitle: const Text('Generar backup inmediatamente'),
+                                trailing: const Icon(Icons.play_arrow),
+                                onTap: _runBackupNow,
+                              ),
+                              if (_lastBackupAt != null)
+                                ListTile(
+                                  title: const Text('Último respaldo'),
+                                  subtitle: Text(
+                                    '${DateFormat('dd MMM yyyy HH:mm', 'es').format(DateTime.tryParse(_lastBackupAt!) ?? DateTime.now())}\n${_lastBackupStatus ?? ""}',
+                                  ),
+                                  isThreeLine: true,
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildSection(
+                            title: 'Respaldo Manual',
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.share),
+                                title: const Text('Compartir JSON'),
+                                subtitle: const Text('Enviar respaldo por correo/WhatsApp'),
+                                onTap: () => _exportData('json'),
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.table_chart),
+                                title: const Text('Compartir Excel'),
+                                subtitle: const Text('Enviar respaldo en Excel'),
+                                onTap: () => _exportData('excel'),
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.download_for_offline),
+                                title: const Text('Importar respaldo'),
+                                subtitle: const Text('Cargar archivo JSON'),
+                                onTap: _importBackup,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildSection(
+                            title: 'Acerca de',
+                            children: [
+                              const ListTile(
+                                title: Text('Versión'),
+                                subtitle: Text('1.0.0'),
+                              ),
+                              const ListTile(
+                                title: Text('Desarrollado con'),
+                                subtitle: Text('Flutter + Riverpod'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSection({required String title, required List<Widget> children}) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            ...children,
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -77,9 +77,11 @@ class WhoGrowthChart extends StatelessWidget {
     final allValues = [...chartData.map((p) => p.y), ...percentileCurves.values.expand((p) => p.map((sp) => sp.y))];
     final rawMinValue = allValues.reduce((a, b) => a < b ? a : b);
     final rawMaxValue = allValues.reduce((a, b) => a > b ? a : b);
-    final minValue = (rawMinValue * 0.85).floorToDouble();
-    final maxValue = (rawMaxValue * 1.15).ceilToDouble();
-    final yInterval = type == GrowthType.weight ? 2.0 : 10.0;
+    final padding = (rawMaxValue - rawMinValue) * 0.15;
+    final minValue = (rawMinValue - padding).floorToDouble();
+    final maxValue = (rawMaxValue + padding).ceilToDouble();
+    final valueRange = maxValue - minValue;
+    final yInterval = valueRange > 0 ? (valueRange / 5).ceilToDouble() : (type == GrowthType.weight ? 2.0 : 10.0);
 
     final lineBarsData = <LineChartBarData>[];
 
@@ -158,7 +160,7 @@ class WhoGrowthChart extends StatelessWidget {
                 leftTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
-                    reservedSize: 50,
+                    reservedSize: 60,
                     interval: yInterval,
                     getTitlesWidget: (value, meta) => SideTitleWidget(
                       axisSide: meta.axisSide,

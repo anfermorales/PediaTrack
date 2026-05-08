@@ -105,9 +105,9 @@ class WhoGrowthChart extends StatelessWidget {
       dotData: FlDotData(
         show: true,
         getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-          radius: 2.2,
+          radius: 1.5,
           color: dataColor,
-          strokeWidth: 1.2,
+          strokeWidth: 1,
           strokeColor: Colors.white,
         ),
       ),
@@ -118,12 +118,14 @@ class WhoGrowthChart extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Unidad: $unit',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+        Builder(
+          builder: (context) => Text(
+            'Unidad: $unit',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -227,19 +229,21 @@ class WhoGrowthChart extends StatelessWidget {
   }
 
   Widget _buildLegendItem(String label, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 20,
-          height: 3,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
+    return Builder(
+      builder: (context) => Row(
+        children: [
+          Container(
+            width: 20,
+            height: 3,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-      ],
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodySmall?.color)),
+        ],
+      ),
     );
   }
 

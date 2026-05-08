@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
+
+final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();

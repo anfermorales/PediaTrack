@@ -23,8 +23,9 @@ import 'dart:io';
 class PediaTrackApp extends ConsumerWidget {
   const PediaTrackApp({super.key});
 
-  @override
+@override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
@@ -32,7 +33,7 @@ class PediaTrackApp extends ConsumerWidget {
       supportedLocales: const [Locale('es', 'MX')],
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       home: const MainNavigation(),
     );
   }
@@ -201,6 +202,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(
+            ref.watch(themeModeProvider) == ThemeMode.dark
+                ? Icons.light_mode_outlined
+                : Icons.dark_mode_outlined,
+          ),
+          onPressed: () {
+            final newMode = ref.read(themeModeProvider) == ThemeMode.dark
+                ? ThemeMode.light
+                : ThemeMode.dark;
+            ref.read(themeModeProvider.notifier).state = newMode;
+          },
+        ),
         title: Row(
           children: [
             Container(
@@ -412,8 +426,11 @@ class _ChildSelector extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     child.name.split(' ').first,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontWeight: isSelected ? FontWeight.bold : null,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurface,
                         ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -660,14 +677,21 @@ class _BirthMetric extends StatelessWidget {
   }
 }
 
-class _RecentGrowthCard extends ConsumerWidget {
+class _RecentGrowthCard extends ConsumerStatefulWidget {
   const _RecentGrowthCard({required this.childId});
 
   final int childId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final growthAsync = ref.watch(growthRecordsStreamProvider(childId));
+  ConsumerState<_RecentGrowthCard> createState() => _RecentGrowthCardState();
+}
+
+class _RecentGrowthCardState extends ConsumerState<_RecentGrowthCard> {
+  int _selectedRecords = 10;
+
+  @override
+  Widget build(BuildContext context) {
+    final growthAsync = ref.watch(growthRecordsStreamProvider(widget.childId));
 
     return growthAsync.when(
       data: (records) {
@@ -680,7 +704,7 @@ class _RecentGrowthCard extends ConsumerWidget {
               subtitle: 'Sin registros de crecimiento',
               color: Colors.blue,
               child: FilledButton.tonal(
-                onPressed: () => _showGrowthEntrySheet(context, childId),
+                onPressed: () => _showGrowthEntrySheet(context, widget.childId),
                 child: const Text('Agregar registro'),
               ),
             ),
@@ -696,7 +720,29 @@ class _RecentGrowthCard extends ConsumerWidget {
             color: Colors.blue,
             child: Column(
               children: [
-                _GrowthChart(records: records.take(10).toList().reversed.toList()),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('Mostrar:', style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(width: 8),
+                    DropdownButton<int>(
+                      value: _selectedRecords,
+                      underline: const SizedBox(),
+                      items: [
+                        const DropdownMenuItem(value: 5, child: Text('5 registros')),
+                        const DropdownMenuItem(value: 10, child: Text('10 registros')),
+                        const DropdownMenuItem(value: 20, child: Text('20 registros')),
+                        const DropdownMenuItem(value: 0, child: Text('Todos')),
+                      ],
+                      onChanged: (value) {
+                        setState(() => _selectedRecords = value ?? 10);
+                      },
+                    ),
+                  ],
+                ),
+                _GrowthChart(records: _selectedRecords == 0
+                    ? records.reversed.toList()
+                    : records.take(_selectedRecords).toList().reversed.toList()),
                 const SizedBox(height: 12),
                 if (records.isNotEmpty)
                   Row(
@@ -1107,7 +1153,7 @@ class _MeasureRecordSheetState extends ConsumerState<_MeasureRecordSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            Text('Ambos campos son opcionales', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text('Ambos campos son opcionales', style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _saveMeasures,
@@ -1275,11 +1321,18 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-class GrowthScreen extends ConsumerWidget {
+class GrowthScreen extends ConsumerStatefulWidget {
   const GrowthScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GrowthScreen> createState() => _GrowthScreenState();
+}
+
+class _GrowthScreenState extends ConsumerState<GrowthScreen> {
+  int _selectedRecords = 10;
+
+  @override
+  Widget build(BuildContext context) {
     final selectedChildId = ref.watch(selectedChildIdProvider);
 
     if (selectedChildId == null) {
@@ -1351,12 +1404,37 @@ class GrowthScreen extends ConsumerWidget {
                       );
                     }
 
-                    final weightRecords = records.where((r) => r.weight != null).toList();
-                    final heightRecords = records.where((r) => r.height != null).toList();
+                    final displayRecords = _selectedRecords == 0
+                        ? records
+                        : records.take(_selectedRecords).toList();
+
+                    final weightRecords = displayRecords.where((r) => r.weight != null).toList();
+                    final heightRecords = displayRecords.where((r) => r.height != null).toList();
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text('Mostrar:', style: Theme.of(context).textTheme.bodySmall),
+                            const SizedBox(width: 8),
+                            DropdownButton<int>(
+                              value: _selectedRecords,
+                              underline: const SizedBox(),
+                              items: const [
+                                DropdownMenuItem(value: 5, child: Text('5 registros')),
+                                DropdownMenuItem(value: 10, child: Text('10 registros')),
+                                DropdownMenuItem(value: 20, child: Text('20 registros')),
+                                DropdownMenuItem(value: 0, child: Text('Todos')),
+                              ],
+                              onChanged: (value) {
+                                setState(() => _selectedRecords = value ?? 10);
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         if (weightRecords.isNotEmpty) ...[
                           _InfoCard(
                             icon: Icons.monitor_weight,
@@ -1413,7 +1491,7 @@ class GrowthScreen extends ConsumerWidget {
                               const SizedBox(height: 16),
                               const Text('Registros Recientes', style: TextStyle(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
-                              ...records.take(10).map((r) => Dismissible(
+                              ...displayRecords.map((r) => Dismissible(
                                     key: Key(r.id.toString()),
                                     direction: DismissDirection.endToStart,
                                     background: Container(
@@ -2162,7 +2240,7 @@ class _HabitHistoryList extends ConsumerWidget {
                   dense: true,
                   leading: Icon(_habitIcon(h.type), color: _habitColor(h.type), size: 20),
                   title: Text(_habitLabel(h.type)),
-                  trailing: Text(DateFormat('HH:mm').format(h.recordedAt), style: const TextStyle(color: Colors.grey)),
+                  trailing: Text(DateFormat('HH:mm').format(h.recordedAt), style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
                 ),
               )).toList(),
             );
@@ -2692,7 +2770,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
           ),
         ),
         const SizedBox(height: 8),
-        Text('Ingresa al menos un valor. Los demás son opcionales.', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        Text('Ingresa al menos un valor. Los demás son opcionales.', style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: _saveGrowthRecord,
@@ -3083,13 +3161,13 @@ class _VaccineCard extends ConsumerWidget {
             children: [
               Text('Registrar ${item.definition.name}'),
               if (item.definition.totalDoses > 1)
-                Text(
+Text(
                   item.definition.description ?? 'Dosis ${item.definition.doseNumber}/${item.definition.totalDoses}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.normal),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               Text(
                 _formatVaccineAge(item.definition.recommendedAgeMonths),
-                style: TextStyle(fontSize: 12, color: Colors.grey[500], fontWeight: FontWeight.normal),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),
@@ -3169,9 +3247,9 @@ class _VaccineCard extends ConsumerWidget {
             children: [
               Text('Editar ${item.definition.name}'),
               if (item.definition.totalDoses > 1)
-                Text(
+Text(
                   item.definition.description ?? 'Dosis ${item.definition.doseNumber}/${item.definition.totalDoses}',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.normal),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
             ],
           ),

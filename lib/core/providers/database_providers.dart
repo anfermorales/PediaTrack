@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
@@ -265,3 +265,4 @@ final vaccineScheduleProvider = FutureProvider.family<List<VaccineScheduleItem>,
   schedule.sort((a, b) => a.dueDate.compareTo(b.dueDate));
   return schedule;
 });
+

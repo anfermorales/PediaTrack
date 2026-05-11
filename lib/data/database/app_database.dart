@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -196,6 +196,14 @@ class AppDatabase extends _$AppDatabase {
   Future<int> deleteHabitRecord(int id) =>
       (delete(habitRecords)..where((h) => h.id.equals(id))).go();
 
+  Future<int> updateHabitRecord(int id, DateTime recordedAt, {String? notes}) =>
+      (update(habitRecords)..where((h) => h.id.equals(id))).write(
+        HabitRecordsCompanion(
+          recordedAt: Value(recordedAt),
+          notes: notes == null ? const Value.absent() : Value(notes),
+        ),
+      );
+
   Future<List<VaccineDefinition>> getAllVaccineDefinitions() =>
       (select(vaccineDefinitions)
             ..orderBy([(v) => OrderingTerm.asc(v.recommendedAgeMonths), (v) => OrderingTerm.asc(v.doseNumber)]))
@@ -234,6 +242,20 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deleteChildVaccine(int id) =>
       (delete(childVaccines)..where((cv) => cv.id.equals(id))).go();
+
+  Future<int> updateChildVaccine(
+    int id, {
+    required DateTime appliedDate,
+    String? batch,
+    String? notes,
+  }) =>
+      (update(childVaccines)..where((cv) => cv.id.equals(id))).write(
+        ChildVaccinesCompanion(
+          appliedDate: Value(appliedDate),
+          batch: batch == null ? const Value(null) : Value(batch),
+          notes: notes == null ? const Value(null) : Value(notes),
+        ),
+      );
 
   Future<ChildVaccine?> getChildVaccineByDefinitionAndChild(int childId, int vaccineDefinitionId) =>
       (select(childVaccines)
@@ -333,6 +355,9 @@ class AppDatabase extends _$AppDatabase {
           batch: vaccineMap['batch'] != null
               ? Value(vaccineMap['batch'] as String)
               : const Value.absent(),
+          notes: vaccineMap['notes'] != null
+              ? Value(vaccineMap['notes'] as String)
+              : const Value.absent(),
         );
         await into(childVaccines).insert(vaccine);
       }
@@ -356,3 +381,4 @@ LazyDatabase _openConnection() {
     return NativeDatabase.createInBackground(file);
   });
 }
+

@@ -19,6 +19,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:pediatrack/enhanced_vaccines_screen.dart';
 
 class PediaTrackApp extends ConsumerWidget {
   const PediaTrackApp({super.key});
@@ -123,7 +124,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
             HomeScreen(),
             GrowthScreen(),
             HabitsScreen(),
-            VaccinesScreen(),
+            EnhancedVaccinesScreen(),
             AlertsScreen(),
           ],
         ),
@@ -364,7 +365,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => QuickRecordSheet(childId: childId),
+      builder: (context) => QuickRecordSheet(childId: childId, initialTab: 0, enableHabitTab: false),
     );
   }
 }
@@ -384,62 +385,85 @@ class _ChildSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 100,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        itemCount: children.length,
-        itemBuilder: (context, index) {
-          final child = children[index];
-          final isSelected = child.id == selectedChildId;
-          return GestureDetector(
-            onTap: () => onChildSelected(child.id),
-            onLongPress: onChildEdit != null ? () => onChildEdit!(child) : null,
-            child: Container(
-              width: 80,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primaryContainer
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
-                border: isSelected
-                    ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2)
-                    : null,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                    child: Icon(
-                      child.gender == 0 ? Icons.boy : Icons.girl,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            'Seleccionar Hijo',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
+        SizedBox(
+          height: 118,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: children.length,
+            itemBuilder: (context, index) {
+              final child = children[index];
+              final isSelected = child.id == selectedChildId;
+              final firstName = child.name.split(' ').first;
+              final initials = child.name
+                  .split(' ')
+                  .where((p) => p.trim().isNotEmpty)
+                  .take(2)
+                  .map((p) => p[0].toUpperCase())
+                  .join();
+              final accent = child.gender == 0 ? Colors.blue : Colors.pink;
+
+              return GestureDetector(
+                onTap: () => onChildSelected(child.id),
+                onLongPress: onChildEdit != null ? () => onChildEdit!(child) : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 96,
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
                       color: isSelected
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : Theme.of(context).colorScheme.surface,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.22),
+                      width: isSelected ? 2 : 1,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    child.name.split(' ').first,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: accent.withValues(alpha: isSelected ? 0.25 : 0.15),
+                        child: Text(
+                          initials,
+                          style: TextStyle(
+                            color: accent,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
                         ),
-                    overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        firstName,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -460,69 +484,78 @@ class _QuickStatsSection extends ConsumerWidget {
         final ageMonths = _calculateAgeMonths(child.birthDate);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.cake_outlined,
-                  label: 'Edad',
-                  value: _formatAge(ageMonths),
-                  color: Colors.pink,
+          child: growthAsync.when(
+            data: (records) {
+              final lastWeight = records.isNotEmpty ? records.first.weight : null;
+              final lastHeight = records.isNotEmpty ? records.first.height : null;
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.cake_outlined,
+                          label: 'Edad',
+                          value: _formatAge(ageMonths),
+                          color: Colors.pink,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          icon: child.gender == 0 ? Icons.boy_outlined : Icons.girl_outlined,
+                          label: 'Género',
+                          value: child.gender == 0 ? 'Niño' : 'Niña',
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.monitor_weight_outlined,
+                          label: 'Peso',
+                          value: lastWeight != null ? '${(lastWeight * 2.20462).toStringAsFixed(1)} lb' : 'Sin dato',
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          icon: Icons.height_outlined,
+                          label: 'Estatura',
+                          value: lastHeight != null ? '${lastHeight.toStringAsFixed(1)} cm' : 'Sin dato',
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+            loading: () => Column(
+              children: const [
+                Row(
+                  children: [
+                    Expanded(child: _StatCard(icon: Icons.cake_outlined, label: 'Edad', value: '...', color: Colors.pink)),
+                    SizedBox(width: 12),
+                    Expanded(child: _StatCard(icon: Icons.person_outline, label: 'Género', value: '...', color: Colors.orange)),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: growthAsync.when(
-                  data: (records) {
-                    final lastWeight = records.isNotEmpty ? records.first.weight : null;
-                    return _StatCard(
-                      icon: Icons.monitor_weight_outlined,
-                      label: 'Peso',
-                      value: lastWeight != null ? '${(lastWeight * 2.20462).toStringAsFixed(1)} lb' : 'Sin dato',
-                      color: Colors.blue,
-                    );
-                  },
-                  loading: () => const _StatCard(
-                    icon: Icons.monitor_weight_outlined,
-                    label: 'Peso',
-                    value: '...',
-                    color: Colors.blue,
-                  ),
-                  error: (_, __) => const _StatCard(
-                    icon: Icons.monitor_weight_outlined,
-                    label: 'Peso',
-                    value: 'Error',
-                    color: Colors.blue,
-                  ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _StatCard(icon: Icons.monitor_weight_outlined, label: 'Peso', value: '...', color: Colors.blue)),
+                    SizedBox(width: 12),
+                    Expanded(child: _StatCard(icon: Icons.height_outlined, label: 'Estatura', value: '...', color: Colors.green)),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: growthAsync.when(
-                  data: (records) {
-                    final lastHeight = records.isNotEmpty ? records.first.height : null;
-                    return _StatCard(
-                      icon: Icons.height_outlined,
-                      label: 'Estatura',
-                      value: lastHeight != null ? '${lastHeight.toStringAsFixed(1)} cm' : 'Sin dato',
-                      color: Colors.green,
-                    );
-                  },
-                  loading: () => const _StatCard(
-                    icon: Icons.height_outlined,
-                    label: 'Estatura',
-                    value: '...',
-                    color: Colors.green,
-                  ),
-                  error: (_, __) => const _StatCard(
-                    icon: Icons.height_outlined,
-                    label: 'Estatura',
-                    value: 'Error',
-                    color: Colors.green,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         );
       },
@@ -537,10 +570,13 @@ class _QuickStatsSection extends ConsumerWidget {
   }
 
   String _formatAge(int ageMonths) {
-    if (ageMonths < 12) return '$ageMonths m';
+    if (ageMonths < 12) return ageMonths == 1 ? '1 mes' : '$ageMonths meses';
     final years = ageMonths ~/ 12;
     final months = ageMonths % 12;
-    return months > 0 ? '$years a $months m' : '$years a';
+    final yearLabel = years == 1 ? 'año' : 'años';
+    if (months == 0) return '$years $yearLabel';
+    final monthLabel = months == 1 ? 'mes' : 'meses';
+    return '$years $yearLabel $months $monthLabel';
   }
 }
 
@@ -937,9 +973,36 @@ class _TodayHabitsCard extends ConsumerWidget {
     );
   }
 
-  IconData _habitIcon(int type) => switch (type) { 0 => Icons.check_circle, 1 => Icons.warning, _ => Icons.water_drop };
-  Color _habitColor(int type) => switch (type) { 0 => Colors.green, 1 => Colors.orange, _ => Colors.red };
-  String _habitLabel(int type) => switch (type) { 0 => 'Normal', 1 => 'Estreñimiento', _ => 'Diarrea' };
+  IconData _habitIcon(int type) => switch (type) {
+        0 => Icons.check_circle,
+        1 => Icons.warning,
+        2 => Icons.water_drop,
+        10 => Icons.restaurant,
+        11 => Icons.nightlight_round,
+        12 => Icons.local_drink,
+        13 => Icons.medication,
+        _ => Icons.event_note,
+      };
+  Color _habitColor(int type) => switch (type) {
+        0 => Colors.green,
+        1 => Colors.orange,
+        2 => Colors.red,
+        10 => Colors.teal,
+        11 => Colors.indigo,
+        12 => Colors.cyan,
+        13 => Colors.deepPurple,
+        _ => Colors.blueGrey,
+      };
+  String _habitLabel(int type) => switch (type) {
+        0 => 'Evacuación normal',
+        1 => 'Estreñimiento',
+        2 => 'Diarrea',
+        10 => 'Alimentación',
+        11 => 'Sueño',
+        12 => 'Hidratación',
+        13 => 'Medicación',
+        _ => 'Otro hábito',
+      };
 }
 
 String _formatVaccineAge(int months) {
@@ -1410,10 +1473,33 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
 
                     final weightRecords = displayRecords.where((r) => r.weight != null).toList();
                     final heightRecords = displayRecords.where((r) => r.height != null).toList();
+                    final latest = records.isNotEmpty ? records.first : null;
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _GrowthMetricChip(
+                              label: 'Registros',
+                              value: '${records.length}',
+                              color: Colors.indigo,
+                            ),
+                            _GrowthMetricChip(
+                              label: 'Peso actual',
+                              value: latest?.weight != null ? '${(latest!.weight! * 2.20462).toStringAsFixed(1)} lb' : 'Sin dato',
+                              color: Colors.blue,
+                            ),
+                            _GrowthMetricChip(
+                              label: 'Estatura actual',
+                              value: latest?.height != null ? '${latest!.height!.toStringAsFixed(1)} cm' : 'Sin dato',
+                              color: Colors.green,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -1500,6 +1586,7 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
                                       padding: const EdgeInsets.only(right: 16),
                                       child: const Icon(Icons.delete, color: Colors.white),
                                     ),
+                                    confirmDismiss: (_) => _confirmDeleteGrowthRecord(context),
                                     onDismissed: (_) => _deleteGrowthRecord(ref, r.id, selectedChildId),
                                     child: ListTile(
                                       leading: const Icon(Icons.show_chart),
@@ -1524,12 +1611,44 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => QuickRecordSheet(childId: selectedChildId, initialTab: 0),
+          );
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Registrar'),
+      ),
     );
   }
 
   int _calculateAgeMonths(DateTime birthDate) {
     final now = DateTime.now();
     return (now.year - birthDate.year) * 12 + (now.month - birthDate.month);
+  }
+
+  Future<bool> _confirmDeleteGrowthRecord(BuildContext context) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar registro'),
+        content: const Text('¿Seguro que deseas eliminar este registro de crecimiento?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    return shouldDelete ?? false;
   }
 
   String _formatAgeFull(int ageMonths) {
@@ -2043,6 +2162,17 @@ class HabitsScreen extends ConsumerWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => QuickRecordSheet(childId: selectedChildId, initialTab: 1),
+          );
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Registrar'),
+      ),
     );
   }
 }
@@ -2071,9 +2201,10 @@ class _HabitStatsCard extends ConsumerWidget {
           );
         }
 
+        final bowelHabits = habits.where((h) => h.type == 0 || h.type == 1 || h.type == 2).toList();
         final daysSinceFirst = habits.last.recordedAt.difference(habits.first.recordedAt).inDays + 1;
-        final totalDays = habits.where((h) => h.type != 2).length;
-        final constipationDays = habits.where((h) => h.type == 1).length;
+        final totalDays = bowelHabits.where((h) => h.type != 2).length;
+        final constipationDays = bowelHabits.where((h) => h.type == 1).length;
         final avgFrequency = daysSinceFirst > 0 ? (totalDays / (daysSinceFirst / 7)).toStringAsFixed(1) : '0';
 
         return _InfoCard(
@@ -2107,7 +2238,7 @@ class _HabitStatsCard extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildFrequencyIndicator(context, habits, daysSinceFirst),
+              _buildFrequencyIndicator(context, bowelHabits, daysSinceFirst),
             ],
           ),
         );
@@ -2131,8 +2262,9 @@ class _HabitStatsCard extends ConsumerWidget {
 
   String _getTrendMessage(List<HabitRecord> habits) {
     if (habits.length < 7) return 'Evaluando...';
-    final recentWeek = habits.take(7).where((h) => h.type != 2).length;
-    final previousWeek = habits.skip(7).take(7).where((h) => h.type != 2).length;
+    final bowelHabits = habits.where((h) => h.type == 0 || h.type == 1 || h.type == 2).toList();
+    final recentWeek = bowelHabits.take(7).where((h) => h.type != 2).length;
+    final previousWeek = bowelHabits.skip(7).take(7).where((h) => h.type != 2).length;
     if (previousWeek == 0) return 'Sin datos previos';
     if (recentWeek > previousWeek) return 'Mejorando ✓';
     if (recentWeek < previousWeek) return 'Empeorando ✗';
@@ -2235,12 +2367,15 @@ class _HabitHistoryList extends ConsumerWidget {
                   padding: const EdgeInsets.only(right: 16),
                   child: const Icon(Icons.delete, color: Colors.white),
                 ),
+                confirmDismiss: (_) => _confirmDeleteHabit(context),
                 onDismissed: (_) => _deleteHabit(ref, h.id),
                 child: ListTile(
                   dense: true,
                   leading: Icon(_habitIcon(h.type), color: _habitColor(h.type), size: 20),
                   title: Text(_habitLabel(h.type)),
+                  subtitle: h.notes != null && h.notes!.trim().isNotEmpty ? Text(h.notes!) : null,
                   trailing: Text(DateFormat('HH:mm').format(h.recordedAt), style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)),
+                  onTap: () => _editHabit(context, ref, h),
                 ),
               )).toList(),
             );
@@ -2275,9 +2410,36 @@ class _HabitHistoryList extends ConsumerWidget {
     return Icons.check_circle;
   }
 
-  IconData _habitIcon(int type) => switch (type) { 0 => Icons.check_circle, 1 => Icons.warning, _ => Icons.water_drop };
-  Color _habitColor(int type) => switch (type) { 0 => Colors.green, 1 => Colors.orange, _ => Colors.red };
-  String _habitLabel(int type) => switch (type) { 0 => 'Normal', 1 => 'Estreñimiento', _ => 'Diarrea' };
+  IconData _habitIcon(int type) => switch (type) {
+        0 => Icons.check_circle,
+        1 => Icons.warning,
+        2 => Icons.water_drop,
+        10 => Icons.restaurant,
+        11 => Icons.nightlight_round,
+        12 => Icons.local_drink,
+        13 => Icons.medication,
+        _ => Icons.event_note,
+      };
+  Color _habitColor(int type) => switch (type) {
+        0 => Colors.green,
+        1 => Colors.orange,
+        2 => Colors.red,
+        10 => Colors.teal,
+        11 => Colors.indigo,
+        12 => Colors.cyan,
+        13 => Colors.deepPurple,
+        _ => Colors.blueGrey,
+      };
+  String _habitLabel(int type) => switch (type) {
+        0 => 'Evacuación normal',
+        1 => 'Estreñimiento',
+        2 => 'Diarrea',
+        10 => 'Alimentación',
+        11 => 'Sueño',
+        12 => 'Hidratación',
+        13 => 'Medicación',
+        _ => 'Otro hábito',
+      };
 
   Future<void> _deleteHabit(WidgetRef ref, int id) async {
     final db = ref.read(databaseProvider);
@@ -2285,6 +2447,116 @@ class _HabitHistoryList extends ConsumerWidget {
     ref.invalidate(_habitHistoryProvider(childId));
     ref.invalidate(todayHabitsProvider(childId));
     ref.invalidate(growthRecordsStreamProvider(childId));
+  }
+
+  Future<bool> _confirmDeleteHabit(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar hábito'),
+        content: const Text('¿Seguro que deseas eliminar este registro de hábito?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  Future<void> _editHabit(BuildContext context, WidgetRef ref, HabitRecord habit) async {
+    int selectedType = habit.type;
+    DateTime selectedDate = habit.recordedAt;
+    final notesController = TextEditingController(text: habit.notes ?? '');
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Editar hábito'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<int>(
+                  value: selectedType,
+                  decoration: const InputDecoration(labelText: 'Tipo de hábito'),
+                  items: const [
+                    DropdownMenuItem(value: 0, child: Text('Evacuación normal')),
+                    DropdownMenuItem(value: 1, child: Text('Estreñimiento')),
+                    DropdownMenuItem(value: 2, child: Text('Diarrea')),
+                    DropdownMenuItem(value: 10, child: Text('Alimentación')),
+                    DropdownMenuItem(value: 11, child: Text('Sueño')),
+                    DropdownMenuItem(value: 12, child: Text('Hidratación')),
+                    DropdownMenuItem(value: 13, child: Text('Medicación')),
+                  ],
+                  onChanged: (v) => setState(() => selectedType = v ?? selectedType),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.calendar_today),
+                  title: const Text('Fecha y hora'),
+                  subtitle: Text(DateFormat('dd MMM yyyy HH:mm', 'es').format(selectedDate)),
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (date == null) return;
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(selectedDate),
+                    );
+                    if (time == null) return;
+                    setState(() {
+                      selectedDate = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                    });
+                  },
+                ),
+                TextField(
+                  controller: notesController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(labelText: 'Observaciones (opcional)'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final db = ref.read(databaseProvider);
+                await db.deleteHabitRecord(habit.id);
+                await db.insertHabitRecord(HabitRecordsCompanion.insert(
+                  childId: habit.childId,
+                  type: selectedType,
+                  recordedAt: selectedDate,
+                  notes: notesController.text.trim().isEmpty
+                      ? const drift.Value.absent()
+                      : drift.Value(notesController.text.trim()),
+                ));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                ref.invalidate(_habitHistoryProvider(childId));
+                ref.invalidate(todayHabitsProvider(childId));
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -2329,6 +2601,43 @@ class _HabitStatCard extends StatelessWidget {
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: Theme.of(context).colorScheme.outline,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GrowthMetricChip extends StatelessWidget {
+  const _GrowthMetricChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelSmall),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
           ),
         ],
       ),
@@ -2384,27 +2693,67 @@ class AlertsScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: alerts.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final alert = alerts[index];
-              final (icon, color) = switch (alert.type) {
-                AppAlertType.vaccineOverdue => (Icons.warning_amber_rounded, Colors.red),
-                AppAlertType.vaccineUpcoming => (Icons.schedule, Colors.orange),
-                AppAlertType.growthOutOfRange => (Icons.monitor_heart_outlined, Colors.deepPurple),
-              };
+          final grouped = <String, List<AppAlert>>{};
+          for (final alert in alerts) {
+            grouped.putIfAbsent(alert.childName, () => []).add(alert);
+          }
+          final childNames = grouped.keys.toList()..sort();
 
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: color.withValues(alpha: 0.15),
-                    child: Icon(icon, color: color),
-                  ),
-                  title: Text(alert.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${alert.childName}\n${alert.message}'),
-                  isThreeLine: true,
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: childNames.length,
+            itemBuilder: (context, childIndex) {
+              final childName = childNames[childIndex];
+              final childAlerts = grouped[childName]!;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          childName,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text('${childAlerts.length}'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ...childAlerts.map((alert) {
+                      final (icon, color) = switch (alert.type) {
+                        AppAlertType.vaccineOverdue => (Icons.warning_amber_rounded, Colors.red),
+                        AppAlertType.vaccineUpcoming => (Icons.schedule, Colors.orange),
+                        AppAlertType.growthOutOfRange => (Icons.monitor_heart_outlined, Colors.deepPurple),
+                      };
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: color.withValues(alpha: 0.15),
+                              child: Icon(icon, color: color),
+                            ),
+                            title: Text(alert.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text(alert.message),
+                            isThreeLine: false,
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               );
             },
@@ -2633,10 +2982,16 @@ Future<void> _saveChild() async {
 }
 
 class QuickRecordSheet extends ConsumerStatefulWidget {
-  const QuickRecordSheet({super.key, required this.childId, this.initialTab = 0});
+  const QuickRecordSheet({
+    super.key,
+    required this.childId,
+    this.initialTab = 0,
+    this.enableHabitTab = true,
+  });
 
   final int childId;
   final int initialTab;
+  final bool enableHabitTab;
 
   @override
   ConsumerState<QuickRecordSheet> createState() => _QuickRecordSheetState();
@@ -2647,6 +3002,8 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
   final _headController = TextEditingController();
+  final _habitNotesController = TextEditingController();
+  int _selectedHabitType = 10;
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -2660,10 +3017,11 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     _weightController.dispose();
     _heightController.dispose();
     _headController.dispose();
+    _habitNotesController.dispose();
     super.dispose();
   }
 
-  Future<void> _selectDate() async {
+  Future<void> _selectDateTime() async {
     final date = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -2671,7 +3029,19 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
       lastDate: DateTime.now(),
     );
     if (date != null) {
-      setState(() => _selectedDate = date);
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_selectedDate),
+      );
+      if (time != null) {
+        setState(() {
+          _selectedDate = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+        });
+      } else {
+        setState(() {
+          _selectedDate = DateTime(date.year, date.month, date.day, _selectedDate.hour, _selectedDate.minute);
+        });
+      }
     }
   }
 
@@ -2703,9 +3073,10 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
                 padding: const EdgeInsets.all(16),
                 child: SegmentedButton<int>(
                   showSelectedIcon: false,
-                  segments: const [
-                    ButtonSegment(value: 0, icon: Icon(Icons.straighten), label: Text('Consulta', overflow: TextOverflow.ellipsis)),
-                    ButtonSegment(value: 1, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
+                  segments: [
+                    const ButtonSegment(value: 0, icon: Icon(Icons.straighten), label: Text('Consulta', overflow: TextOverflow.ellipsis)),
+                    if (widget.enableHabitTab)
+                      const ButtonSegment(value: 1, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
                   ],
                   selected: {_currentTab},
                   onSelectionChanged: (set) => setState(() => _currentTab = set.first),
@@ -2715,11 +3086,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
                 child: SingleChildScrollView(
                   controller: scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: switch (_currentTab) {
-                    0 => _buildConsultForm(),
-                    1 => _buildHabitForm(),
-                    _ => const SizedBox(),
-                  },
+                  child: _currentTab == 1 && widget.enableHabitTab ? _buildHabitForm() : _buildConsultForm(),
                 ),
               ),
             ],
@@ -2843,49 +3210,41 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         const SizedBox(height: 8),
         _buildDateSelector(),
         const SizedBox(height: 24),
-        Text('¿Cómo fue el Hábito intestinal?', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
+        Text('Tipo de hábito', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.outline)),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _HabitOptionCard(
-                type: 0,
-                icon: Icons.check_circle,
-                label: 'Normal',
-                description: 'Evacuación regular',
-                color: Colors.green,
-                onTap: () => _saveHabit(0),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _HabitOptionCard(
-                type: 1,
-                icon: Icons.warning,
-                label: 'Estreñimiento',
-                description: 'Dificultad para evacuar',
-                color: Colors.orange,
-                onTap: () => _saveHabit(1),
-              ),
-            ),
+        DropdownButtonFormField<int>(
+          value: _selectedHabitType,
+          decoration: const InputDecoration(
+            labelText: 'Selecciona hábito',
+            prefixIcon: Icon(Icons.checklist),
+          ),
+          items: const [
+            DropdownMenuItem(value: 0, child: Text('Evacuación normal')),
+            DropdownMenuItem(value: 1, child: Text('Estreñimiento')),
+            DropdownMenuItem(value: 2, child: Text('Diarrea')),
+            DropdownMenuItem(value: 10, child: Text('Alimentación')),
+            DropdownMenuItem(value: 11, child: Text('Sueño')),
+            DropdownMenuItem(value: 12, child: Text('Hidratación')),
+            DropdownMenuItem(value: 13, child: Text('Medicación')),
           ],
+          onChanged: (value) {
+            if (value != null) setState(() => _selectedHabitType = value);
+          },
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _HabitOptionCard(
-                type: 2,
-                icon: Icons.water_drop,
-                label: 'Diarrea',
-                description: 'Evacuación líquida',
-                color: Colors.red,
-                onTap: () => _saveHabit(2),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Container()),
-          ],
+        TextField(
+          controller: _habitNotesController,
+          maxLines: 2,
+          decoration: const InputDecoration(
+            labelText: 'Observaciones (opcional)',
+            prefixIcon: Icon(Icons.notes),
+          ),
+        ),
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          onPressed: () => _saveHabit(_selectedHabitType),
+          icon: const Icon(Icons.save),
+          label: const Text('Guardar hábito'),
         ),
       ],
     );
@@ -2893,7 +3252,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
 
   Widget _buildDateSelector() {
     return InkWell(
-      onTap: _selectDate,
+      onTap: _selectDateTime,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -2906,7 +3265,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
             Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 12),
             Text(
-              DateFormat('dd MMM yyyy', 'es').format(_selectedDate),
+              DateFormat('dd MMM yyyy HH:mm', 'es').format(_selectedDate),
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const Spacer(),
@@ -2923,6 +3282,9 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
       childId: widget.childId,
       type: type,
       recordedAt: _selectedDate,
+      notes: _habitNotesController.text.trim().isEmpty
+          ? const drift.Value.absent()
+          : drift.Value(_habitNotesController.text.trim()),
     ));
 
     ref.invalidate(_habitHistoryProvider(widget.childId));
@@ -3150,6 +3512,7 @@ class _VaccineCard extends ConsumerWidget {
   void _showMarkAppliedDialog(BuildContext context, WidgetRef ref) {
     DateTime selectedDate = DateTime.now();
     final batchController = TextEditingController();
+    final notesController = TextEditingController();
 
     showDialog(
       context: context,
@@ -3185,6 +3548,15 @@ Text(
               ),
               const SizedBox(height: 8),
               TextField(controller: batchController, decoration: const InputDecoration(labelText: 'Lote (opcional)', border: OutlineInputBorder())),
+              const SizedBox(height: 8),
+              TextField(
+                controller: notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Observaciones (opcional)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
             ],
           ),
           actions: [
@@ -3197,6 +3569,7 @@ Text(
                   vaccineDefinitionId: item.definition.id,
                   appliedDate: selectedDate,
                   batch: batchController.text.isEmpty ? const drift.Value(null) : drift.Value(batchController.text),
+                  notes: notesController.text.isEmpty ? const drift.Value(null) : drift.Value(notesController.text),
                 ));
                 ref.invalidate(vaccineScheduleProvider(childId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
@@ -3236,6 +3609,7 @@ Text(
   void _showEditAppliedDialog(BuildContext context, WidgetRef ref) {
     DateTime selectedDate = item.appliedVaccine!.appliedDate;
     final batchController = TextEditingController(text: item.appliedVaccine!.batch ?? '');
+    final notesController = TextEditingController(text: item.appliedVaccine!.notes ?? '');
 
     showDialog(
       context: context,
@@ -3267,6 +3641,15 @@ Text(
               ),
               const SizedBox(height: 8),
               TextField(controller: batchController, decoration: const InputDecoration(labelText: 'Lote (opcional)', border: OutlineInputBorder())),
+              const SizedBox(height: 8),
+              TextField(
+                controller: notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Observaciones (opcional)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
             ],
           ),
           actions: [
@@ -3280,6 +3663,7 @@ Text(
                   vaccineDefinitionId: item.definition.id,
                   appliedDate: selectedDate,
                   batch: batchController.text.isEmpty ? const drift.Value(null) : drift.Value(batchController.text),
+                  notes: notesController.text.isEmpty ? const drift.Value(null) : drift.Value(notesController.text),
                 ));
                 ref.invalidate(vaccineScheduleProvider(childId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
@@ -3307,6 +3691,7 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
   int? _selectedDefinitionId;
   DateTime _selectedDate = DateTime.now();
   final _batchController = TextEditingController();
+  final _notesController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -3399,6 +3784,15 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
             ),
             const SizedBox(height: 16),
             TextField(controller: _batchController, decoration: const InputDecoration(labelText: 'Lote (opcional)', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notesController,
+              decoration: const InputDecoration(
+                labelText: 'Observaciones (opcional)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _selectedDefinitionId == null ? null : () async {
@@ -3408,6 +3802,7 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
                   vaccineDefinitionId: _selectedDefinitionId!,
                   appliedDate: _selectedDate,
                   batch: _batchController.text.isEmpty ? const drift.Value(null) : drift.Value(_batchController.text),
+                  notes: _notesController.text.isEmpty ? const drift.Value(null) : drift.Value(_notesController.text),
                 ));
                 ref.invalidate(vaccineScheduleProvider(widget.childId));
                 if (mounted) Navigator.pop(context);

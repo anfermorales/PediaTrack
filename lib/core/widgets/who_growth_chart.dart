@@ -72,7 +72,7 @@ class WhoGrowthChart extends StatelessWidget {
           .toList();
     }
 
-    final minAge = chartData.first.x.clamp(0.0, 60.0);
+    final minAge = 0.0;
     final maxAge = chartData.last.x.clamp(0.0, 60.0);
     final allValues = [...chartData.map((p) => p.y), ...percentileCurves.values.expand((p) => p.map((sp) => sp.y))];
     final rawMinValue = allValues.reduce((a, b) => a < b ? a : b);

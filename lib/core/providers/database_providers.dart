@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';

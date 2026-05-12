@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -945,7 +947,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
           ),
           Flexible(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -1009,7 +1011,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + math.max(0, MediaQuery.of(context).viewPadding.bottom - MediaQuery.of(context).viewInsets.bottom)),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -1139,7 +1141,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
           ),
           Flexible(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -1170,7 +1172,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + math.max(0, MediaQuery.of(context).viewPadding.bottom - MediaQuery.of(context).viewInsets.bottom)),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart' as drift;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -621,7 +623,7 @@ class _AddGrowthSheetState extends ConsumerState<_AddGrowthSheet> {
           ),
           Flexible(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

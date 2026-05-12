@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -417,7 +419,7 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
                 left: 24,
                 right: 24,
                 top: 24,
-                bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+                bottom: 24 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -493,7 +495,7 @@ class _AddHabitSheetState extends ConsumerState<_AddHabitSheet> {
           SafeArea(
             top: false,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).viewPadding.bottom),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + math.max(0, MediaQuery.of(context).viewPadding.bottom - MediaQuery.of(context).viewInsets.bottom)),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,

@@ -14,6 +14,7 @@ import 'package:pediatrack/data/database/app_database.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
@@ -1181,7 +1182,7 @@ class _MeasureRecordSheetState extends ConsumerState<_MeasureRecordSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(bottom: math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
       child: Container(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1444,10 +1445,6 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _showEditBirthDataDialog(context, ref, child),
-                      ),
                     ],
                   ),
                 ),
@@ -1657,78 +1654,6 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
     final months = ageMonths % 12;
     if (months == 0) return '$years años';
     return '$years años $months meses';
-  }
-
-  void _showEditBirthDataDialog(BuildContext context, WidgetRef ref, ChildrenData child) {
-    final db = ref.read(databaseProvider);
-    final weightController = TextEditingController(
-      text: child.birthWeight != null ? (child.birthWeight! * 2.20462).toStringAsFixed(1) : '',
-    );
-    final heightController = TextEditingController(
-      text: child.birthHeight != null ? child.birthHeight!.toStringAsFixed(1) : '',
-    );
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Editar Datos al Nacer'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: weightController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Peso al nacer',
-                prefixIcon: Icon(Icons.monitor_weight),
-                suffixText: 'lb',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: heightController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Estatura al nacer',
-                prefixIcon: Icon(Icons.height),
-                suffixText: 'cm',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              try {
-                final birthWeightLb = double.tryParse(weightController.text);
-                final birthHeightCm = double.tryParse(heightController.text);
-                final birthWeight = birthWeightLb != null ? birthWeightLb / 2.20462 : null;
-
-                await db.updateChildBirthData(child.id, birthWeight, birthHeightCm);
-
-                if (dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Datos actualizados')),
-                  );
-                }
-              } catch (e) {
-                if (dialogContext.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
-                }
-              }
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _deleteGrowthRecord(WidgetRef ref, int id, int childId) async {

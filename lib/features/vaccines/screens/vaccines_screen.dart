@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -346,7 +348,7 @@ class _CompleteVaccineSheetState extends ConsumerState<_CompleteVaccineSheet> {
           ),
           Flexible(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -446,7 +448,7 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
           SafeArea(child: Padding(padding: const EdgeInsets.fromLTRB(24, 16, 24, 0), child: Column(children: [Container(width: 40, height: 4, decoration: BoxDecoration(color: isDark ? AppColors.darkBorder : AppColors.grey50, borderRadius: BorderRadius.circular(2))), const SizedBox(height: 16), Text('Agregar Vacuna', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: isDark ? AppColors.darkTextPrimary : null))]))),
           Flexible(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + MediaQuery.of(context).viewInsets.bottom),
+              padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

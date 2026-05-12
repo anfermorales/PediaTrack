@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -268,7 +270,7 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
             ),
             Flexible(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(22, 18, 22, 14 + MediaQuery.of(context).viewInsets.bottom),
+                padding: EdgeInsets.fromLTRB(22, 18, 22, 14 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -334,7 +336,7 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
             SafeArea(
               top: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(22, 0, 22, 16 + MediaQuery.of(context).viewPadding.bottom),
+                padding: EdgeInsets.fromLTRB(22, 0, 22, 16 + math.max(0, MediaQuery.of(context).viewPadding.bottom - MediaQuery.of(context).viewInsets.bottom)),
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(

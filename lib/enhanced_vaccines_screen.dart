@@ -1,6 +1,4 @@
-import 'dart:math' as math;
-
-import 'package:drift/drift.dart' as drift;
+﻿import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -26,17 +24,20 @@ class _EnhancedVaccinesScreenState extends ConsumerState<EnhancedVaccinesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final selectedChildId = ref.watch(selectedChildIdProvider);
     if (selectedChildId == null) {
       return Scaffold(
+        key: ValueKey('vaccines-empty-${brightness.name}'),
         appBar: AppBar(title: const Text('Vacunas')),
-        body: const Center(child: Text('Selecciona un niño para ver sus vacunas')),
+        body: const Center(child: Text('Selecciona un niÃ±o para ver sus vacunas')),
       );
     }
 
     final scheduleAsync = ref.watch(vaccineScheduleProvider(selectedChildId));
 
     return Scaffold(
+      key: ValueKey('vaccines-screen-${brightness.name}'),
       appBar: AppBar(
         title: const Text('Vacunas'),
         bottom: TabBar(
@@ -53,6 +54,7 @@ class _EnhancedVaccinesScreenState extends ConsumerState<EnhancedVaccinesScreen>
           final pending = schedule.where((s) => !s.isCompleted).toList();
           final completed = schedule.where((s) => s.isCompleted).toList();
           return TabBarView(
+            key: ValueKey('vaccines-tabs-${brightness.name}'),
             controller: _tabController,
             children: [
               _VaccineList(items: pending, childId: selectedChildId),
@@ -77,8 +79,10 @@ class _VaccineList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (items.isEmpty) return const Center(child: Text('Sin registros'));
+    final brightness = Theme.of(context).brightness;
 
     return ListView.builder(
+      key: ValueKey('vaccines-list-${childId}-${brightness.name}'),
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
       itemBuilder: (context, i) {
@@ -241,6 +245,8 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.item.appliedVaccine != null;
+    final keyboard = MediaQuery.of(context).viewInsets.bottom;
+    final bottomSafe = MediaQuery.of(context).viewPadding.bottom;
 
     return Container(
       decoration: BoxDecoration(
@@ -270,7 +276,7 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
             ),
             Flexible(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(22, 18, 22, 14 + math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
+                padding: EdgeInsets.fromLTRB(22, 18, 22, 14 + keyboard),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -336,7 +342,7 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
             SafeArea(
               top: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(22, 0, 22, 16 + math.max(0, MediaQuery.of(context).viewPadding.bottom - MediaQuery.of(context).viewInsets.bottom)),
+                padding: EdgeInsets.fromLTRB(22, 0, 22, 10 + bottomSafe),
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -378,3 +384,4 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
     );
   }
 }
+

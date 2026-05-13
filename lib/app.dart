@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart' as drift;
+﻿import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -20,7 +20,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pediatrack/enhanced_vaccines_screen.dart';
+
+double _sheetBottomSpace(BuildContext context) => 10 + MediaQuery.of(context).viewPadding.bottom;
 
 class PediaTrackApp extends ConsumerWidget {
   const PediaTrackApp({super.key});
@@ -302,7 +305,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: _VaccineSummaryCard(childId: childId),
       ),
       SliverToBoxAdapter(
-        child: _QuickActionsCard(childId),
+        child: _HomeGuidanceCard(childId: childId),
       ),
       const SliverToBoxAdapter(child: SizedBox(height: 80)),
     ];
@@ -366,7 +369,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => QuickRecordSheet(childId: childId, initialTab: 0, enableHabitTab: false),
+      builder: (context) => QuickRecordSheet(childId: childId, initialTab: 0, enableHabitTab: true),
+    );
+  }
+}
+
+class _HomeGuidanceCard extends ConsumerWidget {
+  const _HomeGuidanceCard({required this.childId});
+
+  final int childId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: _InfoCard(
+        icon: Icons.lightbulb_outline,
+        title: 'Sugerencia rápida',
+        subtitle: 'Para registrar más fácil',
+        color: Colors.amber,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Usa el botón "Registrar" para guardar Consulta o Hábito desde cualquier pantalla principal.'),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -724,7 +752,7 @@ class _RecentGrowthCard extends ConsumerStatefulWidget {
 }
 
 class _RecentGrowthCardState extends ConsumerState<_RecentGrowthCard> {
-  int _selectedRecords = 10;
+  int _selectedRecords = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -772,7 +800,7 @@ class _RecentGrowthCardState extends ConsumerState<_RecentGrowthCard> {
                         const DropdownMenuItem(value: 0, child: Text('Todos')),
                       ],
                       onChanged: (value) {
-                        setState(() => _selectedRecords = value ?? 10);
+                        setState(() => _selectedRecords = value ?? 0);
                       },
                     ),
                   ],
@@ -1140,7 +1168,7 @@ class _QuickActionsCard extends ConsumerWidget {
               icon: Icons.bathroom,
               label: 'Hábito',
               color: Colors.orange,
-              onTap: () => _showQuickRecord(context, ref, 2),
+              onTap: () => _showQuickRecord(context, ref, 1),
             ),
           ],
         ),
@@ -1157,10 +1185,15 @@ class _QuickActionsCard extends ConsumerWidget {
   }
 
   void _showQuickRecord(BuildContext context, WidgetRef ref, int tab) {
+    final habitOnly = tab == 1;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => QuickRecordSheet(childId: childId, initialTab: tab),
+      builder: (context) => QuickRecordSheet(
+        childId: childId,
+        initialTab: tab,
+        habitOnly: habitOnly,
+      ),
     );
   }
 }
@@ -1181,10 +1214,11 @@ class _MeasureRecordSheetState extends ConsumerState<_MeasureRecordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboard = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
-      padding: EdgeInsets.only(bottom: math.max(0, MediaQuery.of(context).viewInsets.bottom - MediaQuery.of(context).viewPadding.bottom)),
+      padding: EdgeInsets.only(bottom: keyboard),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, _sheetBottomSpace(context)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1393,7 +1427,7 @@ class GrowthScreen extends ConsumerStatefulWidget {
 }
 
 class _GrowthScreenState extends ConsumerState<GrowthScreen> {
-  int _selectedRecords = 10;
+  int _selectedRecords = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -1427,7 +1461,7 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
           final ageMonths = _calculateAgeMonths(child.birthDate);
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 120 + MediaQuery.of(context).viewPadding.bottom),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1512,7 +1546,7 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
                                 DropdownMenuItem(value: 0, child: Text('Todos')),
                               ],
                               onChanged: (value) {
-                                setState(() => _selectedRecords = value ?? 10);
+                                setState(() => _selectedRecords = value ?? 0);
                               },
                             ),
                           ],
@@ -1996,6 +2030,8 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                                 title: Text('Desarrollado con'),
                                 subtitle: Text('Flutter + Riverpod'),
                               ),
+                              const SizedBox(height: 10),
+                              const _TorogozBrandCard(),
                             ],
                           ),
                         ],
@@ -2031,6 +2067,62 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   }
 }
 
+class _TorogozBrandCard extends StatelessWidget {
+  const _TorogozBrandCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF0F172A) : Colors.white;
+    final textColor = isDark ? Colors.white70 : const Color(0xFF263238);
+    final borderColor = isDark ? const Color(0xFF334155) : Theme.of(context).colorScheme.outline.withValues(alpha: 0.35);
+    final logoBgColor = isDark ? Colors.white : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: logoBgColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFFE2E8F0) : Colors.transparent,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: SvgPicture.asset(
+                'assets/icon/logo-torogoz.svg',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '© 2026 TOROGOZ TECH S.A.S. DE C.V.',
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class HabitsScreen extends ConsumerWidget {
   const HabitsScreen({super.key});
 
@@ -2059,7 +2151,7 @@ class HabitsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Hábitos')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 120 + MediaQuery.of(context).viewPadding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2092,7 +2184,11 @@ class HabitsScreen extends ConsumerWidget {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            builder: (_) => QuickRecordSheet(childId: selectedChildId, initialTab: 1),
+            builder: (_) => QuickRecordSheet(
+              childId: selectedChildId,
+              initialTab: 1,
+              habitOnly: false,
+            ),
           );
         },
         icon: const Icon(Icons.add),
@@ -2191,8 +2287,8 @@ class _HabitStatsCard extends ConsumerWidget {
     final recentWeek = bowelHabits.take(7).where((h) => h.type != 2).length;
     final previousWeek = bowelHabits.skip(7).take(7).where((h) => h.type != 2).length;
     if (previousWeek == 0) return 'Sin datos previos';
-    if (recentWeek > previousWeek) return 'Mejorando ✓';
-    if (recentWeek < previousWeek) return 'Empeorando ✗';
+    if (recentWeek > previousWeek) return 'Mejorando âœ“';
+    if (recentWeek < previousWeek) return 'Empeorando âœ—';
     return 'Sin cambios';
   }
 
@@ -2576,6 +2672,7 @@ class AlertsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final alertsAsync = ref.watch(alertsProvider);
+    final selectedChildId = ref.watch(selectedChildIdProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Alertas')),
       body: alertsAsync.when(
@@ -2618,8 +2715,18 @@ class AlertsScreen extends ConsumerWidget {
             );
           }
 
+          final visibleAlerts = selectedChildId == null
+              ? alerts
+              : alerts.where((a) => a.childId == selectedChildId).toList();
+
+          if (visibleAlerts.isEmpty) {
+            return const Center(
+              child: Text('No hay alertas para el niño seleccionado'),
+            );
+          }
+
           final grouped = <String, List<AppAlert>>{};
-          for (final alert in alerts) {
+          for (final alert in visibleAlerts) {
             grouped.putIfAbsent(alert.childName, () => []).add(alert);
           }
           final childNames = grouped.keys.toList()..sort();
@@ -2630,6 +2737,8 @@ class AlertsScreen extends ConsumerWidget {
             itemBuilder: (context, childIndex) {
               final childName = childNames[childIndex];
               final childAlerts = grouped[childName]!;
+              const headerBg = Color(0xFFE3F2FD);
+              const headerText = Color(0xFF0D47A1);
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -2638,20 +2747,42 @@ class AlertsScreen extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          childName,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: headerBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: headerText.withValues(alpha: 0.28),
                               ),
+                            ),
+                            child: Text(
+                              childName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: headerText,
+                                  ),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primaryContainer,
+                            color: headerBg,
                             borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: headerText.withValues(alpha: 0.28)),
                           ),
-                          child: Text('${childAlerts.length}'),
+                          child: Text(
+                            '${childAlerts.length}',
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  color: headerText,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
                         ),
                       ],
                     ),
@@ -2702,6 +2833,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
   final _nameController = TextEditingController();
   final _birthWeightController = TextEditingController();
   final _birthHeightController = TextEditingController();
+  final _notesController = TextEditingController();
   late DateTime _birthDate;
   late int _gender;
   bool _isLoading = false;
@@ -2721,6 +2853,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
       if (widget.child!.birthHeight != null) {
         _birthHeightController.text = widget.child!.birthHeight!.toStringAsFixed(1);
       }
+      _notesController.text = widget.child!.notes ?? '';
     } else {
       _birthDate = DateTime.now().subtract(const Duration(days: 365));
       _gender = 0;
@@ -2732,17 +2865,19 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
     _nameController.dispose();
     _birthWeightController.dispose();
     _birthHeightController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final keyboard = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: keyboard,
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, _sheetBottomSpace(context)),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -2795,7 +2930,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
               const SizedBox(height: 16),
               SegmentedButton<int>(
                 segments: const [
-                  ButtonSegment(value: 0, icon: Icon(Icons.boy), label: Text('niño')),
+                  ButtonSegment(value: 0, icon: Icon(Icons.boy), label: Text('Niño')),
                   ButtonSegment(value: 1, icon: Icon(Icons.girl), label: Text('Niña')),
                 ],
                 selected: {_gender},
@@ -2823,6 +2958,15 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
                   suffixText: 'cm',
                 ),
               ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _notesController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Observaciones (opcional)',
+                  prefixIcon: Icon(Icons.notes_outlined),
+                ),
+              ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _isLoading ? null : _saveChild,
@@ -2830,7 +2974,6 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Text('Guardar'),
               ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -2853,6 +2996,7 @@ Future<void> _saveChild() async {
       final birthWeightLb = double.tryParse(_birthWeightController.text);
       final birthHeightCm = double.tryParse(_birthHeightController.text);
       final birthWeightKg = birthWeightLb != null ? birthWeightLb / 2.20462 : null;
+      final notes = _notesController.text.trim();
 
       if (_isEditing) {
         final updatedChild = widget.child!.copyWith(
@@ -2861,6 +3005,7 @@ Future<void> _saveChild() async {
           gender: _gender,
           birthWeight: birthWeightKg != null ? drift.Value(birthWeightKg) : const drift.Value.absent(),
           birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
+          notes: notes.isEmpty ? const drift.Value.absent() : drift.Value(notes),
         );
         await db.updateChild(updatedChild);
         if (mounted) {
@@ -2876,6 +3021,7 @@ Future<void> _saveChild() async {
           gender: _gender,
           birthWeight: birthWeightKg != null ? drift.Value(birthWeightKg) : const drift.Value.absent(),
           birthHeight: birthHeightCm != null ? drift.Value(birthHeightCm) : const drift.Value.absent(),
+          notes: notes.isEmpty ? const drift.Value.absent() : drift.Value(notes),
         ));
 
         if (birthWeightKg != null || birthHeightCm != null) {
@@ -2912,11 +3058,13 @@ class QuickRecordSheet extends ConsumerStatefulWidget {
     required this.childId,
     this.initialTab = 0,
     this.enableHabitTab = true,
+    this.habitOnly = false,
   });
 
   final int childId;
   final int initialTab;
   final bool enableHabitTab;
+  final bool habitOnly;
 
   @override
   ConsumerState<QuickRecordSheet> createState() => _QuickRecordSheetState();
@@ -2927,6 +3075,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
   final _headController = TextEditingController();
+  final _consultNotesController = TextEditingController();
   final _habitNotesController = TextEditingController();
   int _selectedHabitType = 10;
   DateTime _selectedDate = DateTime.now();
@@ -2942,6 +3091,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
     _weightController.dispose();
     _heightController.dispose();
     _headController.dispose();
+    _consultNotesController.dispose();
     _habitNotesController.dispose();
     super.dispose();
   }
@@ -2972,6 +3122,7 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboard = MediaQuery.of(context).viewInsets.bottom;
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.4,
@@ -2996,23 +3147,39 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
               ),
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: SegmentedButton<int>(
-                  showSelectedIcon: false,
-                  segments: [
-                    const ButtonSegment(value: 0, icon: Icon(Icons.straighten), label: Text('Consulta', overflow: TextOverflow.ellipsis)),
-                    if (widget.enableHabitTab)
-                      const ButtonSegment(value: 1, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
-                  ],
-                  selected: {_currentTab},
-                  onSelectionChanged: (set) => setState(() => _currentTab = set.first),
-                ),
+                child: widget.habitOnly
+                    ? const SizedBox.shrink()
+                    : SegmentedButton<int>(
+                        showSelectedIcon: false,
+                        segments: [
+                          const ButtonSegment(value: 0, icon: Icon(Icons.straighten), label: Text('Consulta', overflow: TextOverflow.ellipsis)),
+                          if (widget.enableHabitTab)
+                            const ButtonSegment(value: 1, icon: Icon(Icons.bathroom), label: Text('Hábito', overflow: TextOverflow.ellipsis)),
+                        ],
+                        selected: {_currentTab},
+                        onSelectionChanged: (set) => setState(() => _currentTab = set.first),
+                      ),
               ),
               Expanded(
                 child: SingleChildScrollView(
                   controller: scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _currentTab == 1 && widget.enableHabitTab ? _buildHabitForm() : _buildConsultForm(),
+                  child: widget.habitOnly || (_currentTab == 1 && widget.enableHabitTab) ? _buildHabitForm() : _buildConsultForm(),
                 ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, _sheetBottomSpace(context) + (keyboard > 0 ? 6 : 0)),
+                child: widget.habitOnly || (_currentTab == 1 && widget.enableHabitTab)
+                    ? FilledButton.icon(
+                        onPressed: () => _saveHabit(_selectedHabitType),
+                        icon: const Icon(Icons.save),
+                        label: const Text('Guardar hábito'),
+                      )
+                    : FilledButton.icon(
+                        onPressed: _saveGrowthRecord,
+                        icon: const Icon(Icons.save),
+                        label: const Text('Guardar'),
+                      ),
               ),
             ],
           ),
@@ -3063,12 +3230,16 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         ),
         const SizedBox(height: 8),
         Text('Ingresa al menos un valor. Los demás son opcionales.', style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 24),
-        FilledButton.icon(
-          onPressed: _saveGrowthRecord,
-          icon: const Icon(Icons.save),
-          label: const Text('Guardar'),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _consultNotesController,
+          maxLines: 2,
+          decoration: const InputDecoration(
+            labelText: 'Observaciones (opcional)',
+            prefixIcon: Icon(Icons.notes_outlined),
+          ),
         ),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -3094,6 +3265,9 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         childId: widget.childId,
         weight: drift.Value(weightKg),
         date: _selectedDate,
+        notes: _consultNotesController.text.trim().isEmpty
+            ? const drift.Value.absent()
+            : drift.Value(_consultNotesController.text.trim()),
       ));
       savedCount++;
     }
@@ -3103,6 +3277,9 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         childId: widget.childId,
         height: drift.Value(heightValue),
         date: _selectedDate,
+        notes: _consultNotesController.text.trim().isEmpty
+            ? const drift.Value.absent()
+            : drift.Value(_consultNotesController.text.trim()),
       ));
       savedCount++;
     }
@@ -3112,6 +3289,9 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
         childId: widget.childId,
         headCircumference: drift.Value(headValue),
         date: _selectedDate,
+        notes: _consultNotesController.text.trim().isEmpty
+            ? const drift.Value.absent()
+            : drift.Value(_consultNotesController.text.trim()),
       ));
       savedCount++;
     }
@@ -3166,11 +3346,6 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
           ),
         ),
         const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: () => _saveHabit(_selectedHabitType),
-          icon: const Icon(Icons.save),
-          label: const Text('Guardar hábito'),
-        ),
       ],
     );
   }
@@ -3741,5 +3916,7 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
     );
   }
 }
+
+
 
 

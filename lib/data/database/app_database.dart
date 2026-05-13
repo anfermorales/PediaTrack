@@ -16,6 +16,7 @@ class Children extends Table {
   IntColumn get gender => integer()();
   RealColumn get birthWeight => real().nullable()();
   RealColumn get birthHeight => real().nullable()();
+  TextColumn get notes => text().nullable()();
   TextColumn get photo => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
@@ -73,7 +74,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -95,6 +96,9 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 4) {
           await m.createTable(settings);
+        }
+        if (from < 5) {
+          await m.addColumn(children, children.notes);
         }
       },
     );

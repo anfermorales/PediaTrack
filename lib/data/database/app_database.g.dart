@@ -46,6 +46,11 @@ class $ChildrenTable extends Children
   late final GeneratedColumn<double> birthHeight = GeneratedColumn<double>(
       'birth_height', aliasedName, true,
       type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _photoMeta = const VerificationMeta('photo');
   @override
   late final GeneratedColumn<String> photo = GeneratedColumn<String>(
@@ -60,8 +65,17 @@ class $ChildrenTable extends Children
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, birthDate, gender, birthWeight, birthHeight, photo, createdAt];
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        birthDate,
+        gender,
+        birthWeight,
+        birthHeight,
+        notes,
+        photo,
+        createdAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -105,6 +119,10 @@ class $ChildrenTable extends Children
           birthHeight.isAcceptableOrUnknown(
               data['birth_height']!, _birthHeightMeta));
     }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
     if (data.containsKey('photo')) {
       context.handle(
           _photoMeta, photo.isAcceptableOrUnknown(data['photo']!, _photoMeta));
@@ -134,6 +152,8 @@ class $ChildrenTable extends Children
           .read(DriftSqlType.double, data['${effectivePrefix}birth_weight']),
       birthHeight: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}birth_height']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
       photo: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}photo']),
       createdAt: attachedDatabase.typeMapping
@@ -154,6 +174,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
   final int gender;
   final double? birthWeight;
   final double? birthHeight;
+  final String? notes;
   final String? photo;
   final DateTime createdAt;
   const ChildrenData(
@@ -163,6 +184,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
       required this.gender,
       this.birthWeight,
       this.birthHeight,
+      this.notes,
       this.photo,
       required this.createdAt});
   @override
@@ -177,6 +199,9 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
     }
     if (!nullToAbsent || birthHeight != null) {
       map['birth_height'] = Variable<double>(birthHeight);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
     }
     if (!nullToAbsent || photo != null) {
       map['photo'] = Variable<String>(photo);
@@ -197,6 +222,8 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
       birthHeight: birthHeight == null && nullToAbsent
           ? const Value.absent()
           : Value(birthHeight),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       photo:
           photo == null && nullToAbsent ? const Value.absent() : Value(photo),
       createdAt: Value(createdAt),
@@ -213,6 +240,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
       gender: serializer.fromJson<int>(json['gender']),
       birthWeight: serializer.fromJson<double?>(json['birthWeight']),
       birthHeight: serializer.fromJson<double?>(json['birthHeight']),
+      notes: serializer.fromJson<String?>(json['notes']),
       photo: serializer.fromJson<String?>(json['photo']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -227,6 +255,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
       'gender': serializer.toJson<int>(gender),
       'birthWeight': serializer.toJson<double?>(birthWeight),
       'birthHeight': serializer.toJson<double?>(birthHeight),
+      'notes': serializer.toJson<String?>(notes),
       'photo': serializer.toJson<String?>(photo),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -239,6 +268,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
           int? gender,
           Value<double?> birthWeight = const Value.absent(),
           Value<double?> birthHeight = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
           Value<String?> photo = const Value.absent(),
           DateTime? createdAt}) =>
       ChildrenData(
@@ -248,6 +278,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
         gender: gender ?? this.gender,
         birthWeight: birthWeight.present ? birthWeight.value : this.birthWeight,
         birthHeight: birthHeight.present ? birthHeight.value : this.birthHeight,
+        notes: notes.present ? notes.value : this.notes,
         photo: photo.present ? photo.value : this.photo,
         createdAt: createdAt ?? this.createdAt,
       );
@@ -260,6 +291,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
           ..write('gender: $gender, ')
           ..write('birthWeight: $birthWeight, ')
           ..write('birthHeight: $birthHeight, ')
+          ..write('notes: $notes, ')
           ..write('photo: $photo, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -267,8 +299,8 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, name, birthDate, gender, birthWeight, birthHeight, photo, createdAt);
+  int get hashCode => Object.hash(id, name, birthDate, gender, birthWeight,
+      birthHeight, notes, photo, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -279,6 +311,7 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
           other.gender == this.gender &&
           other.birthWeight == this.birthWeight &&
           other.birthHeight == this.birthHeight &&
+          other.notes == this.notes &&
           other.photo == this.photo &&
           other.createdAt == this.createdAt);
 }
@@ -290,6 +323,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
   final Value<int> gender;
   final Value<double?> birthWeight;
   final Value<double?> birthHeight;
+  final Value<String?> notes;
   final Value<String?> photo;
   final Value<DateTime> createdAt;
   const ChildrenCompanion({
@@ -299,6 +333,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
     this.gender = const Value.absent(),
     this.birthWeight = const Value.absent(),
     this.birthHeight = const Value.absent(),
+    this.notes = const Value.absent(),
     this.photo = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
@@ -309,6 +344,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
     required int gender,
     this.birthWeight = const Value.absent(),
     this.birthHeight = const Value.absent(),
+    this.notes = const Value.absent(),
     this.photo = const Value.absent(),
     this.createdAt = const Value.absent(),
   })  : name = Value(name),
@@ -321,6 +357,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
     Expression<int>? gender,
     Expression<double>? birthWeight,
     Expression<double>? birthHeight,
+    Expression<String>? notes,
     Expression<String>? photo,
     Expression<DateTime>? createdAt,
   }) {
@@ -331,6 +368,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
       if (gender != null) 'gender': gender,
       if (birthWeight != null) 'birth_weight': birthWeight,
       if (birthHeight != null) 'birth_height': birthHeight,
+      if (notes != null) 'notes': notes,
       if (photo != null) 'photo': photo,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -343,6 +381,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
       Value<int>? gender,
       Value<double?>? birthWeight,
       Value<double?>? birthHeight,
+      Value<String?>? notes,
       Value<String?>? photo,
       Value<DateTime>? createdAt}) {
     return ChildrenCompanion(
@@ -352,6 +391,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
       gender: gender ?? this.gender,
       birthWeight: birthWeight ?? this.birthWeight,
       birthHeight: birthHeight ?? this.birthHeight,
+      notes: notes ?? this.notes,
       photo: photo ?? this.photo,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -378,6 +418,9 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
     if (birthHeight.present) {
       map['birth_height'] = Variable<double>(birthHeight.value);
     }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     if (photo.present) {
       map['photo'] = Variable<String>(photo.value);
     }
@@ -396,6 +439,7 @@ class ChildrenCompanion extends UpdateCompanion<ChildrenData> {
           ..write('gender: $gender, ')
           ..write('birthWeight: $birthWeight, ')
           ..write('birthHeight: $birthHeight, ')
+          ..write('notes: $notes, ')
           ..write('photo: $photo, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -2095,6 +2139,7 @@ typedef $$ChildrenTableInsertCompanionBuilder = ChildrenCompanion Function({
   required int gender,
   Value<double?> birthWeight,
   Value<double?> birthHeight,
+  Value<String?> notes,
   Value<String?> photo,
   Value<DateTime> createdAt,
 });
@@ -2105,6 +2150,7 @@ typedef $$ChildrenTableUpdateCompanionBuilder = ChildrenCompanion Function({
   Value<int> gender,
   Value<double?> birthWeight,
   Value<double?> birthHeight,
+  Value<String?> notes,
   Value<String?> photo,
   Value<DateTime> createdAt,
 });
@@ -2135,6 +2181,7 @@ class $$ChildrenTableTableManager extends RootTableManager<
             Value<int> gender = const Value.absent(),
             Value<double?> birthWeight = const Value.absent(),
             Value<double?> birthHeight = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             Value<String?> photo = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
           }) =>
@@ -2145,6 +2192,7 @@ class $$ChildrenTableTableManager extends RootTableManager<
             gender: gender,
             birthWeight: birthWeight,
             birthHeight: birthHeight,
+            notes: notes,
             photo: photo,
             createdAt: createdAt,
           ),
@@ -2155,6 +2203,7 @@ class $$ChildrenTableTableManager extends RootTableManager<
             required int gender,
             Value<double?> birthWeight = const Value.absent(),
             Value<double?> birthHeight = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
             Value<String?> photo = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
           }) =>
@@ -2165,6 +2214,7 @@ class $$ChildrenTableTableManager extends RootTableManager<
             gender: gender,
             birthWeight: birthWeight,
             birthHeight: birthHeight,
+            notes: notes,
             photo: photo,
             createdAt: createdAt,
           ),
@@ -2213,6 +2263,11 @@ class $$ChildrenTableFilterComposer
 
   ColumnFilters<double> get birthHeight => $state.composableBuilder(
       column: $state.table.birthHeight,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get notes => $state.composableBuilder(
+      column: $state.table.notes,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -2296,6 +2351,11 @@ class $$ChildrenTableOrderingComposer
 
   ColumnOrderings<double> get birthHeight => $state.composableBuilder(
       column: $state.table.birthHeight,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get notes => $state.composableBuilder(
+      column: $state.table.notes,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

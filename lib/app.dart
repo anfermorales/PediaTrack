@@ -3123,30 +3123,30 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
   @override
   Widget build(BuildContext context) {
     final keyboard = MediaQuery.of(context).viewInsets.bottom;
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16, 12, 16, _sheetBottomSpace(context)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.only(top: 16),
                 child: widget.habitOnly
                     ? const SizedBox.shrink()
                     : SegmentedButton<int>(
@@ -3160,15 +3160,12 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
                         onSelectionChanged: (set) => setState(() => _currentTab = set.first),
                       ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: widget.habitOnly || (_currentTab == 1 && widget.enableHabitTab) ? _buildHabitForm() : _buildConsultForm(),
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: widget.habitOnly || (_currentTab == 1 && widget.enableHabitTab) ? _buildHabitForm() : _buildConsultForm(),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, _sheetBottomSpace(context) + (keyboard > 0 ? 6 : 0)),
+                padding: EdgeInsets.only(top: 8, bottom: keyboard > 0 ? 6 : 0),
                 child: widget.habitOnly || (_currentTab == 1 && widget.enableHabitTab)
                     ? FilledButton.icon(
                         onPressed: () => _saveHabit(_selectedHabitType),
@@ -3183,8 +3180,8 @@ class _QuickRecordSheetState extends ConsumerState<QuickRecordSheet> {
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

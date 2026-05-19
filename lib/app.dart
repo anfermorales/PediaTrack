@@ -25,11 +25,18 @@ import 'package:pediatrack/enhanced_vaccines_screen.dart';
 
 double _sheetBottomSpace(BuildContext context) => 10 + MediaQuery.of(context).viewPadding.bottom;
 
-class PediaTrackApp extends ConsumerWidget {
-  const PediaTrackApp({super.key});
+class PediaTrackApp extends ConsumerStatefulWidget {
+  const PediaTrackApp({super.key, required this.initialTheme});
 
-@override
-  Widget build(BuildContext context, WidgetRef ref) {
+  final ThemeMode initialTheme;
+
+  @override
+  ConsumerState<PediaTrackApp> createState() => _PediaTrackAppState();
+}
+
+class _PediaTrackAppState extends ConsumerState<PediaTrackApp> {
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     return MaterialApp(
       title: AppConstants.appName,

@@ -14,12 +14,29 @@ Future<void> main() async {
   await NotificationService.initialize();
   await AutoBackupScheduler.initialize();
   await AutoBackupScheduler.syncFromDatabase();
+
+  final db = AppDatabase();
+  final savedTheme = await db.getSetting('theme_mode');
+  setInitialThemeMode(_themeFromString(savedTheme));
+  await db.close();
+
   await _seedChildrenWithExpectedData();
   runApp(
     const ProviderScope(
-      child: PediaTrackApp(),
+      child: PediaTrackApp(initialTheme: ThemeMode.light),
     ),
   );
+}
+
+ThemeMode _themeFromString(String? value) {
+  switch (value) {
+    case 'light':
+      return ThemeMode.light;
+    case 'dark':
+      return ThemeMode.dark;
+    default:
+      return ThemeMode.light;
+  }
 }
 
 Future<void> _seedChildrenWithExpectedData() async {

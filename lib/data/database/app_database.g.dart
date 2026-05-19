@@ -282,6 +282,22 @@ class ChildrenData extends DataClass implements Insertable<ChildrenData> {
         photo: photo.present ? photo.value : this.photo,
         createdAt: createdAt ?? this.createdAt,
       );
+  ChildrenData copyWithCompanion(ChildrenCompanion data) {
+    return ChildrenData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
+      gender: data.gender.present ? data.gender.value : this.gender,
+      birthWeight:
+          data.birthWeight.present ? data.birthWeight.value : this.birthWeight,
+      birthHeight:
+          data.birthHeight.present ? data.birthHeight.value : this.birthHeight,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      photo: data.photo.present ? data.photo.value : this.photo,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ChildrenData(')
@@ -698,6 +714,21 @@ class GrowthRecord extends DataClass implements Insertable<GrowthRecord> {
         notes: notes.present ? notes.value : this.notes,
         createdAt: createdAt ?? this.createdAt,
       );
+  GrowthRecord copyWithCompanion(GrowthRecordsCompanion data) {
+    return GrowthRecord(
+      id: data.id.present ? data.id.value : this.id,
+      childId: data.childId.present ? data.childId.value : this.childId,
+      weight: data.weight.present ? data.weight.value : this.weight,
+      height: data.height.present ? data.height.value : this.height,
+      headCircumference: data.headCircumference.present
+          ? data.headCircumference.value
+          : this.headCircumference,
+      date: data.date.present ? data.date.value : this.date,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('GrowthRecord(')
@@ -1051,6 +1082,18 @@ class HabitRecord extends DataClass implements Insertable<HabitRecord> {
         notes: notes.present ? notes.value : this.notes,
         createdAt: createdAt ?? this.createdAt,
       );
+  HabitRecord copyWithCompanion(HabitRecordsCompanion data) {
+    return HabitRecord(
+      id: data.id.present ? data.id.value : this.id,
+      childId: data.childId.present ? data.childId.value : this.childId,
+      type: data.type.present ? data.type.value : this.type,
+      recordedAt:
+          data.recordedAt.present ? data.recordedAt.value : this.recordedAt,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('HabitRecord(')
@@ -1415,6 +1458,23 @@ class VaccineDefinition extends DataClass
         recommendedAgeMonths: recommendedAgeMonths ?? this.recommendedAgeMonths,
         category: category ?? this.category,
       );
+  VaccineDefinition copyWithCompanion(VaccineDefinitionsCompanion data) {
+    return VaccineDefinition(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      description:
+          data.description.present ? data.description.value : this.description,
+      doseNumber:
+          data.doseNumber.present ? data.doseNumber.value : this.doseNumber,
+      totalDoses:
+          data.totalDoses.present ? data.totalDoses.value : this.totalDoses,
+      recommendedAgeMonths: data.recommendedAgeMonths.present
+          ? data.recommendedAgeMonths.value
+          : this.recommendedAgeMonths,
+      category: data.category.present ? data.category.value : this.category,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('VaccineDefinition(')
@@ -1788,6 +1848,21 @@ class ChildVaccine extends DataClass implements Insertable<ChildVaccine> {
         notes: notes.present ? notes.value : this.notes,
         createdAt: createdAt ?? this.createdAt,
       );
+  ChildVaccine copyWithCompanion(ChildVaccinesCompanion data) {
+    return ChildVaccine(
+      id: data.id.present ? data.id.value : this.id,
+      childId: data.childId.present ? data.childId.value : this.childId,
+      vaccineDefinitionId: data.vaccineDefinitionId.present
+          ? data.vaccineDefinitionId.value
+          : this.vaccineDefinitionId,
+      appliedDate:
+          data.appliedDate.present ? data.appliedDate.value : this.appliedDate,
+      batch: data.batch.present ? data.batch.value : this.batch,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('ChildVaccine(')
@@ -2029,6 +2104,13 @@ class Setting extends DataClass implements Insertable<Setting> {
         key: key ?? this.key,
         value: value ?? this.value,
       );
+  Setting copyWithCompanion(SettingsCompanion data) {
+    return Setting(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('Setting(')
@@ -2110,7 +2192,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
-  _$AppDatabaseManager get managers => _$AppDatabaseManager(this);
+  $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ChildrenTable children = $ChildrenTable(this);
   late final $GrowthRecordsTable growthRecords = $GrowthRecordsTable(this);
   late final $HabitRecordsTable habitRecords = $HabitRecordsTable(this);
@@ -2132,7 +2214,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ];
 }
 
-typedef $$ChildrenTableInsertCompanionBuilder = ChildrenCompanion Function({
+typedef $$ChildrenTableCreateCompanionBuilder = ChildrenCompanion Function({
   Value<int> id,
   required String name,
   required DateTime birthDate,
@@ -2155,26 +2237,319 @@ typedef $$ChildrenTableUpdateCompanionBuilder = ChildrenCompanion Function({
   Value<DateTime> createdAt,
 });
 
+final class $$ChildrenTableReferences
+    extends BaseReferences<_$AppDatabase, $ChildrenTable, ChildrenData> {
+  $$ChildrenTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$GrowthRecordsTable, List<GrowthRecord>>
+      _growthRecordsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.growthRecords,
+              aliasName: $_aliasNameGenerator(
+                  db.children.id, db.growthRecords.childId));
+
+  $$GrowthRecordsTableProcessedTableManager get growthRecordsRefs {
+    final manager = $$GrowthRecordsTableTableManager($_db, $_db.growthRecords)
+        .filter((f) => f.childId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_growthRecordsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$HabitRecordsTable, List<HabitRecord>>
+      _habitRecordsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.habitRecords,
+          aliasName:
+              $_aliasNameGenerator(db.children.id, db.habitRecords.childId));
+
+  $$HabitRecordsTableProcessedTableManager get habitRecordsRefs {
+    final manager = $$HabitRecordsTableTableManager($_db, $_db.habitRecords)
+        .filter((f) => f.childId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_habitRecordsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ChildVaccinesTable, List<ChildVaccine>>
+      _childVaccinesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.childVaccines,
+              aliasName: $_aliasNameGenerator(
+                  db.children.id, db.childVaccines.childId));
+
+  $$ChildVaccinesTableProcessedTableManager get childVaccinesRefs {
+    final manager = $$ChildVaccinesTableTableManager($_db, $_db.childVaccines)
+        .filter((f) => f.childId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_childVaccinesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$ChildrenTableFilterComposer
+    extends Composer<_$AppDatabase, $ChildrenTable> {
+  $$ChildrenTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get birthDate => $composableBuilder(
+      column: $table.birthDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get gender => $composableBuilder(
+      column: $table.gender, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get birthWeight => $composableBuilder(
+      column: $table.birthWeight, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get birthHeight => $composableBuilder(
+      column: $table.birthHeight, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get photo => $composableBuilder(
+      column: $table.photo, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> growthRecordsRefs(
+      Expression<bool> Function($$GrowthRecordsTableFilterComposer f) f) {
+    final $$GrowthRecordsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.growthRecords,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$GrowthRecordsTableFilterComposer(
+              $db: $db,
+              $table: $db.growthRecords,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> habitRecordsRefs(
+      Expression<bool> Function($$HabitRecordsTableFilterComposer f) f) {
+    final $$HabitRecordsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.habitRecords,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$HabitRecordsTableFilterComposer(
+              $db: $db,
+              $table: $db.habitRecords,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> childVaccinesRefs(
+      Expression<bool> Function($$ChildVaccinesTableFilterComposer f) f) {
+    final $$ChildVaccinesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.childVaccines,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildVaccinesTableFilterComposer(
+              $db: $db,
+              $table: $db.childVaccines,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$ChildrenTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChildrenTable> {
+  $$ChildrenTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get birthDate => $composableBuilder(
+      column: $table.birthDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get gender => $composableBuilder(
+      column: $table.gender, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get birthWeight => $composableBuilder(
+      column: $table.birthWeight, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get birthHeight => $composableBuilder(
+      column: $table.birthHeight, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get photo => $composableBuilder(
+      column: $table.photo, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ChildrenTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChildrenTable> {
+  $$ChildrenTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get birthDate =>
+      $composableBuilder(column: $table.birthDate, builder: (column) => column);
+
+  GeneratedColumn<int> get gender =>
+      $composableBuilder(column: $table.gender, builder: (column) => column);
+
+  GeneratedColumn<double> get birthWeight => $composableBuilder(
+      column: $table.birthWeight, builder: (column) => column);
+
+  GeneratedColumn<double> get birthHeight => $composableBuilder(
+      column: $table.birthHeight, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get photo =>
+      $composableBuilder(column: $table.photo, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> growthRecordsRefs<T extends Object>(
+      Expression<T> Function($$GrowthRecordsTableAnnotationComposer a) f) {
+    final $$GrowthRecordsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.growthRecords,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$GrowthRecordsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.growthRecords,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> habitRecordsRefs<T extends Object>(
+      Expression<T> Function($$HabitRecordsTableAnnotationComposer a) f) {
+    final $$HabitRecordsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.habitRecords,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$HabitRecordsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.habitRecords,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> childVaccinesRefs<T extends Object>(
+      Expression<T> Function($$ChildVaccinesTableAnnotationComposer a) f) {
+    final $$ChildVaccinesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.childVaccines,
+        getReferencedColumn: (t) => t.childId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildVaccinesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.childVaccines,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
 class $$ChildrenTableTableManager extends RootTableManager<
     _$AppDatabase,
     $ChildrenTable,
     ChildrenData,
     $$ChildrenTableFilterComposer,
     $$ChildrenTableOrderingComposer,
-    $$ChildrenTableProcessedTableManager,
-    $$ChildrenTableInsertCompanionBuilder,
-    $$ChildrenTableUpdateCompanionBuilder> {
+    $$ChildrenTableAnnotationComposer,
+    $$ChildrenTableCreateCompanionBuilder,
+    $$ChildrenTableUpdateCompanionBuilder,
+    (ChildrenData, $$ChildrenTableReferences),
+    ChildrenData,
+    PrefetchHooks Function(
+        {bool growthRecordsRefs,
+        bool habitRecordsRefs,
+        bool childVaccinesRefs})> {
   $$ChildrenTableTableManager(_$AppDatabase db, $ChildrenTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$ChildrenTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$ChildrenTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ChildrenTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$ChildrenTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChildrenTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChildrenTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<DateTime> birthDate = const Value.absent(),
@@ -2196,7 +2571,7 @@ class $$ChildrenTableTableManager extends RootTableManager<
             photo: photo,
             createdAt: createdAt,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
             required DateTime birthDate,
@@ -2218,159 +2593,86 @@ class $$ChildrenTableTableManager extends RootTableManager<
             photo: photo,
             createdAt: createdAt,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$ChildrenTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: (
+              {growthRecordsRefs = false,
+              habitRecordsRefs = false,
+              childVaccinesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (growthRecordsRefs) db.growthRecords,
+                if (habitRecordsRefs) db.habitRecords,
+                if (childVaccinesRefs) db.childVaccines
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (growthRecordsRefs)
+                    await $_getPrefetchedData<ChildrenData, $ChildrenTable,
+                            GrowthRecord>(
+                        currentTable: table,
+                        referencedTable: $$ChildrenTableReferences
+                            ._growthRecordsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ChildrenTableReferences(db, table, p0)
+                                .growthRecordsRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.childId == item.id),
+                        typedResults: items),
+                  if (habitRecordsRefs)
+                    await $_getPrefetchedData<ChildrenData, $ChildrenTable,
+                            HabitRecord>(
+                        currentTable: table,
+                        referencedTable: $$ChildrenTableReferences
+                            ._habitRecordsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ChildrenTableReferences(db, table, p0)
+                                .habitRecordsRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.childId == item.id),
+                        typedResults: items),
+                  if (childVaccinesRefs)
+                    await $_getPrefetchedData<ChildrenData, $ChildrenTable,
+                            ChildVaccine>(
+                        currentTable: table,
+                        referencedTable: $$ChildrenTableReferences
+                            ._childVaccinesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ChildrenTableReferences(db, table, p0)
+                                .childVaccinesRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.childId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
-class $$ChildrenTableProcessedTableManager extends ProcessedTableManager<
+typedef $$ChildrenTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $ChildrenTable,
     ChildrenData,
     $$ChildrenTableFilterComposer,
     $$ChildrenTableOrderingComposer,
-    $$ChildrenTableProcessedTableManager,
-    $$ChildrenTableInsertCompanionBuilder,
-    $$ChildrenTableUpdateCompanionBuilder> {
-  $$ChildrenTableProcessedTableManager(super.$state);
-}
-
-class $$ChildrenTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ChildrenTable> {
-  $$ChildrenTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get birthDate => $state.composableBuilder(
-      column: $state.table.birthDate,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get gender => $state.composableBuilder(
-      column: $state.table.gender,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get birthWeight => $state.composableBuilder(
-      column: $state.table.birthWeight,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get birthHeight => $state.composableBuilder(
-      column: $state.table.birthHeight,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get photo => $state.composableBuilder(
-      column: $state.table.photo,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ComposableFilter growthRecordsRefs(
-      ComposableFilter Function($$GrowthRecordsTableFilterComposer f) f) {
-    final $$GrowthRecordsTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.growthRecords,
-        getReferencedColumn: (t) => t.childId,
-        builder: (joinBuilder, parentComposers) =>
-            $$GrowthRecordsTableFilterComposer(ComposerState($state.db,
-                $state.db.growthRecords, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-
-  ComposableFilter habitRecordsRefs(
-      ComposableFilter Function($$HabitRecordsTableFilterComposer f) f) {
-    final $$HabitRecordsTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.habitRecords,
-        getReferencedColumn: (t) => t.childId,
-        builder: (joinBuilder, parentComposers) =>
-            $$HabitRecordsTableFilterComposer(ComposerState($state.db,
-                $state.db.habitRecords, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-
-  ComposableFilter childVaccinesRefs(
-      ComposableFilter Function($$ChildVaccinesTableFilterComposer f) f) {
-    final $$ChildVaccinesTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.childVaccines,
-        getReferencedColumn: (t) => t.childId,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildVaccinesTableFilterComposer(ComposerState($state.db,
-                $state.db.childVaccines, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-}
-
-class $$ChildrenTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ChildrenTable> {
-  $$ChildrenTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get birthDate => $state.composableBuilder(
-      column: $state.table.birthDate,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get gender => $state.composableBuilder(
-      column: $state.table.gender,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get birthWeight => $state.composableBuilder(
-      column: $state.table.birthWeight,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get birthHeight => $state.composableBuilder(
-      column: $state.table.birthHeight,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get photo => $state.composableBuilder(
-      column: $state.table.photo,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$GrowthRecordsTableInsertCompanionBuilder = GrowthRecordsCompanion
+    $$ChildrenTableAnnotationComposer,
+    $$ChildrenTableCreateCompanionBuilder,
+    $$ChildrenTableUpdateCompanionBuilder,
+    (ChildrenData, $$ChildrenTableReferences),
+    ChildrenData,
+    PrefetchHooks Function(
+        {bool growthRecordsRefs,
+        bool habitRecordsRefs,
+        bool childVaccinesRefs})>;
+typedef $$GrowthRecordsTableCreateCompanionBuilder = GrowthRecordsCompanion
     Function({
   Value<int> id,
   required int childId,
@@ -2393,26 +2695,205 @@ typedef $$GrowthRecordsTableUpdateCompanionBuilder = GrowthRecordsCompanion
   Value<DateTime> createdAt,
 });
 
+final class $$GrowthRecordsTableReferences
+    extends BaseReferences<_$AppDatabase, $GrowthRecordsTable, GrowthRecord> {
+  $$GrowthRecordsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ChildrenTable _childIdTable(_$AppDatabase db) =>
+      db.children.createAlias(
+          $_aliasNameGenerator(db.growthRecords.childId, db.children.id));
+
+  $$ChildrenTableProcessedTableManager get childId {
+    final $_column = $_itemColumn<int>('child_id')!;
+
+    final manager = $$ChildrenTableTableManager($_db, $_db.children)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_childIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$GrowthRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $GrowthRecordsTable> {
+  $$GrowthRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get weight => $composableBuilder(
+      column: $table.weight, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get height => $composableBuilder(
+      column: $table.height, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get headCircumference => $composableBuilder(
+      column: $table.headCircumference,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$ChildrenTableFilterComposer get childId {
+    final $$ChildrenTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableFilterComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$GrowthRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $GrowthRecordsTable> {
+  $$GrowthRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get weight => $composableBuilder(
+      column: $table.weight, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get height => $composableBuilder(
+      column: $table.height, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get headCircumference => $composableBuilder(
+      column: $table.headCircumference,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$ChildrenTableOrderingComposer get childId {
+    final $$ChildrenTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableOrderingComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$GrowthRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GrowthRecordsTable> {
+  $$GrowthRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<double> get weight =>
+      $composableBuilder(column: $table.weight, builder: (column) => column);
+
+  GeneratedColumn<double> get height =>
+      $composableBuilder(column: $table.height, builder: (column) => column);
+
+  GeneratedColumn<double> get headCircumference => $composableBuilder(
+      column: $table.headCircumference, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ChildrenTableAnnotationComposer get childId {
+    final $$ChildrenTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableAnnotationComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
 class $$GrowthRecordsTableTableManager extends RootTableManager<
     _$AppDatabase,
     $GrowthRecordsTable,
     GrowthRecord,
     $$GrowthRecordsTableFilterComposer,
     $$GrowthRecordsTableOrderingComposer,
-    $$GrowthRecordsTableProcessedTableManager,
-    $$GrowthRecordsTableInsertCompanionBuilder,
-    $$GrowthRecordsTableUpdateCompanionBuilder> {
+    $$GrowthRecordsTableAnnotationComposer,
+    $$GrowthRecordsTableCreateCompanionBuilder,
+    $$GrowthRecordsTableUpdateCompanionBuilder,
+    (GrowthRecord, $$GrowthRecordsTableReferences),
+    GrowthRecord,
+    PrefetchHooks Function({bool childId})> {
   $$GrowthRecordsTableTableManager(_$AppDatabase db, $GrowthRecordsTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$GrowthRecordsTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$GrowthRecordsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$GrowthRecordsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$GrowthRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GrowthRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GrowthRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int> childId = const Value.absent(),
             Value<double?> weight = const Value.absent(),
@@ -2432,7 +2913,7 @@ class $$GrowthRecordsTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int childId,
             Value<double?> weight = const Value.absent(),
@@ -2452,124 +2933,63 @@ class $$GrowthRecordsTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$GrowthRecordsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({childId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (childId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.childId,
+                    referencedTable:
+                        $$GrowthRecordsTableReferences._childIdTable(db),
+                    referencedColumn:
+                        $$GrowthRecordsTableReferences._childIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 
-class $$GrowthRecordsTableProcessedTableManager extends ProcessedTableManager<
+typedef $$GrowthRecordsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $GrowthRecordsTable,
     GrowthRecord,
     $$GrowthRecordsTableFilterComposer,
     $$GrowthRecordsTableOrderingComposer,
-    $$GrowthRecordsTableProcessedTableManager,
-    $$GrowthRecordsTableInsertCompanionBuilder,
-    $$GrowthRecordsTableUpdateCompanionBuilder> {
-  $$GrowthRecordsTableProcessedTableManager(super.$state);
-}
-
-class $$GrowthRecordsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $GrowthRecordsTable> {
-  $$GrowthRecordsTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get weight => $state.composableBuilder(
-      column: $state.table.weight,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get height => $state.composableBuilder(
-      column: $state.table.height,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get headCircumference => $state.composableBuilder(
-      column: $state.table.headCircumference,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get date => $state.composableBuilder(
-      column: $state.table.date,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  $$ChildrenTableFilterComposer get childId {
-    final $$ChildrenTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.childId,
-        referencedTable: $state.db.children,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildrenTableFilterComposer(ComposerState(
-                $state.db, $state.db.children, joinBuilder, parentComposers)));
-    return composer;
-  }
-}
-
-class $$GrowthRecordsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $GrowthRecordsTable> {
-  $$GrowthRecordsTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get weight => $state.composableBuilder(
-      column: $state.table.weight,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get height => $state.composableBuilder(
-      column: $state.table.height,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get headCircumference => $state.composableBuilder(
-      column: $state.table.headCircumference,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get date => $state.composableBuilder(
-      column: $state.table.date,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  $$ChildrenTableOrderingComposer get childId {
-    final $$ChildrenTableOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.childId,
-        referencedTable: $state.db.children,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildrenTableOrderingComposer(ComposerState(
-                $state.db, $state.db.children, joinBuilder, parentComposers)));
-    return composer;
-  }
-}
-
-typedef $$HabitRecordsTableInsertCompanionBuilder = HabitRecordsCompanion
+    $$GrowthRecordsTableAnnotationComposer,
+    $$GrowthRecordsTableCreateCompanionBuilder,
+    $$GrowthRecordsTableUpdateCompanionBuilder,
+    (GrowthRecord, $$GrowthRecordsTableReferences),
+    GrowthRecord,
+    PrefetchHooks Function({bool childId})>;
+typedef $$HabitRecordsTableCreateCompanionBuilder = HabitRecordsCompanion
     Function({
   Value<int> id,
   required int childId,
@@ -2588,26 +3008,184 @@ typedef $$HabitRecordsTableUpdateCompanionBuilder = HabitRecordsCompanion
   Value<DateTime> createdAt,
 });
 
+final class $$HabitRecordsTableReferences
+    extends BaseReferences<_$AppDatabase, $HabitRecordsTable, HabitRecord> {
+  $$HabitRecordsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ChildrenTable _childIdTable(_$AppDatabase db) =>
+      db.children.createAlias(
+          $_aliasNameGenerator(db.habitRecords.childId, db.children.id));
+
+  $$ChildrenTableProcessedTableManager get childId {
+    final $_column = $_itemColumn<int>('child_id')!;
+
+    final manager = $$ChildrenTableTableManager($_db, $_db.children)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_childIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$HabitRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $HabitRecordsTable> {
+  $$HabitRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get recordedAt => $composableBuilder(
+      column: $table.recordedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$ChildrenTableFilterComposer get childId {
+    final $$ChildrenTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableFilterComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$HabitRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HabitRecordsTable> {
+  $$HabitRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get recordedAt => $composableBuilder(
+      column: $table.recordedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$ChildrenTableOrderingComposer get childId {
+    final $$ChildrenTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableOrderingComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$HabitRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HabitRecordsTable> {
+  $$HabitRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get recordedAt => $composableBuilder(
+      column: $table.recordedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ChildrenTableAnnotationComposer get childId {
+    final $$ChildrenTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableAnnotationComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
 class $$HabitRecordsTableTableManager extends RootTableManager<
     _$AppDatabase,
     $HabitRecordsTable,
     HabitRecord,
     $$HabitRecordsTableFilterComposer,
     $$HabitRecordsTableOrderingComposer,
-    $$HabitRecordsTableProcessedTableManager,
-    $$HabitRecordsTableInsertCompanionBuilder,
-    $$HabitRecordsTableUpdateCompanionBuilder> {
+    $$HabitRecordsTableAnnotationComposer,
+    $$HabitRecordsTableCreateCompanionBuilder,
+    $$HabitRecordsTableUpdateCompanionBuilder,
+    (HabitRecord, $$HabitRecordsTableReferences),
+    HabitRecord,
+    PrefetchHooks Function({bool childId})> {
   $$HabitRecordsTableTableManager(_$AppDatabase db, $HabitRecordsTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$HabitRecordsTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$HabitRecordsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$HabitRecordsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$HabitRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HabitRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HabitRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int> childId = const Value.absent(),
             Value<int> type = const Value.absent(),
@@ -2623,7 +3201,7 @@ class $$HabitRecordsTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int childId,
             required int type,
@@ -2639,104 +3217,63 @@ class $$HabitRecordsTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$HabitRecordsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({childId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (childId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.childId,
+                    referencedTable:
+                        $$HabitRecordsTableReferences._childIdTable(db),
+                    referencedColumn:
+                        $$HabitRecordsTableReferences._childIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 
-class $$HabitRecordsTableProcessedTableManager extends ProcessedTableManager<
+typedef $$HabitRecordsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $HabitRecordsTable,
     HabitRecord,
     $$HabitRecordsTableFilterComposer,
     $$HabitRecordsTableOrderingComposer,
-    $$HabitRecordsTableProcessedTableManager,
-    $$HabitRecordsTableInsertCompanionBuilder,
-    $$HabitRecordsTableUpdateCompanionBuilder> {
-  $$HabitRecordsTableProcessedTableManager(super.$state);
-}
-
-class $$HabitRecordsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $HabitRecordsTable> {
-  $$HabitRecordsTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get type => $state.composableBuilder(
-      column: $state.table.type,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get recordedAt => $state.composableBuilder(
-      column: $state.table.recordedAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  $$ChildrenTableFilterComposer get childId {
-    final $$ChildrenTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.childId,
-        referencedTable: $state.db.children,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildrenTableFilterComposer(ComposerState(
-                $state.db, $state.db.children, joinBuilder, parentComposers)));
-    return composer;
-  }
-}
-
-class $$HabitRecordsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $HabitRecordsTable> {
-  $$HabitRecordsTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get type => $state.composableBuilder(
-      column: $state.table.type,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get recordedAt => $state.composableBuilder(
-      column: $state.table.recordedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  $$ChildrenTableOrderingComposer get childId {
-    final $$ChildrenTableOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.childId,
-        referencedTable: $state.db.children,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildrenTableOrderingComposer(ComposerState(
-                $state.db, $state.db.children, joinBuilder, parentComposers)));
-    return composer;
-  }
-}
-
-typedef $$VaccineDefinitionsTableInsertCompanionBuilder
+    $$HabitRecordsTableAnnotationComposer,
+    $$HabitRecordsTableCreateCompanionBuilder,
+    $$HabitRecordsTableUpdateCompanionBuilder,
+    (HabitRecord, $$HabitRecordsTableReferences),
+    HabitRecord,
+    PrefetchHooks Function({bool childId})>;
+typedef $$VaccineDefinitionsTableCreateCompanionBuilder
     = VaccineDefinitionsCompanion Function({
   Value<int> id,
   required String name,
@@ -2757,27 +3294,190 @@ typedef $$VaccineDefinitionsTableUpdateCompanionBuilder
   Value<String> category,
 });
 
+final class $$VaccineDefinitionsTableReferences extends BaseReferences<
+    _$AppDatabase, $VaccineDefinitionsTable, VaccineDefinition> {
+  $$VaccineDefinitionsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ChildVaccinesTable, List<ChildVaccine>>
+      _childVaccinesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.childVaccines,
+              aliasName: $_aliasNameGenerator(db.vaccineDefinitions.id,
+                  db.childVaccines.vaccineDefinitionId));
+
+  $$ChildVaccinesTableProcessedTableManager get childVaccinesRefs {
+    final manager = $$ChildVaccinesTableTableManager($_db, $_db.childVaccines)
+        .filter((f) =>
+            f.vaccineDefinitionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_childVaccinesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$VaccineDefinitionsTableFilterComposer
+    extends Composer<_$AppDatabase, $VaccineDefinitionsTable> {
+  $$VaccineDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get doseNumber => $composableBuilder(
+      column: $table.doseNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalDoses => $composableBuilder(
+      column: $table.totalDoses, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get recommendedAgeMonths => $composableBuilder(
+      column: $table.recommendedAgeMonths,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> childVaccinesRefs(
+      Expression<bool> Function($$ChildVaccinesTableFilterComposer f) f) {
+    final $$ChildVaccinesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.childVaccines,
+        getReferencedColumn: (t) => t.vaccineDefinitionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildVaccinesTableFilterComposer(
+              $db: $db,
+              $table: $db.childVaccines,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$VaccineDefinitionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $VaccineDefinitionsTable> {
+  $$VaccineDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get doseNumber => $composableBuilder(
+      column: $table.doseNumber, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalDoses => $composableBuilder(
+      column: $table.totalDoses, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get recommendedAgeMonths => $composableBuilder(
+      column: $table.recommendedAgeMonths,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+}
+
+class $$VaccineDefinitionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VaccineDefinitionsTable> {
+  $$VaccineDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<int> get doseNumber => $composableBuilder(
+      column: $table.doseNumber, builder: (column) => column);
+
+  GeneratedColumn<int> get totalDoses => $composableBuilder(
+      column: $table.totalDoses, builder: (column) => column);
+
+  GeneratedColumn<int> get recommendedAgeMonths => $composableBuilder(
+      column: $table.recommendedAgeMonths, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  Expression<T> childVaccinesRefs<T extends Object>(
+      Expression<T> Function($$ChildVaccinesTableAnnotationComposer a) f) {
+    final $$ChildVaccinesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.childVaccines,
+        getReferencedColumn: (t) => t.vaccineDefinitionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildVaccinesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.childVaccines,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
 class $$VaccineDefinitionsTableTableManager extends RootTableManager<
     _$AppDatabase,
     $VaccineDefinitionsTable,
     VaccineDefinition,
     $$VaccineDefinitionsTableFilterComposer,
     $$VaccineDefinitionsTableOrderingComposer,
-    $$VaccineDefinitionsTableProcessedTableManager,
-    $$VaccineDefinitionsTableInsertCompanionBuilder,
-    $$VaccineDefinitionsTableUpdateCompanionBuilder> {
+    $$VaccineDefinitionsTableAnnotationComposer,
+    $$VaccineDefinitionsTableCreateCompanionBuilder,
+    $$VaccineDefinitionsTableUpdateCompanionBuilder,
+    (VaccineDefinition, $$VaccineDefinitionsTableReferences),
+    VaccineDefinition,
+    PrefetchHooks Function({bool childVaccinesRefs})> {
   $$VaccineDefinitionsTableTableManager(
       _$AppDatabase db, $VaccineDefinitionsTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$VaccineDefinitionsTableFilterComposer(ComposerState(db, table)),
-          orderingComposer: $$VaccineDefinitionsTableOrderingComposer(
-              ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$VaccineDefinitionsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$VaccineDefinitionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VaccineDefinitionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VaccineDefinitionsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String?> description = const Value.absent(),
@@ -2795,7 +3495,7 @@ class $$VaccineDefinitionsTableTableManager extends RootTableManager<
             recommendedAgeMonths: recommendedAgeMonths,
             category: category,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
             Value<String?> description = const Value.absent(),
@@ -2813,114 +3513,54 @@ class $$VaccineDefinitionsTableTableManager extends RootTableManager<
             recommendedAgeMonths: recommendedAgeMonths,
             category: category,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$VaccineDefinitionsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({childVaccinesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (childVaccinesRefs) db.childVaccines
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (childVaccinesRefs)
+                    await $_getPrefetchedData<VaccineDefinition,
+                            $VaccineDefinitionsTable, ChildVaccine>(
+                        currentTable: table,
+                        referencedTable: $$VaccineDefinitionsTableReferences
+                            ._childVaccinesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$VaccineDefinitionsTableReferences(db, table, p0)
+                                .childVaccinesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.vaccineDefinitionId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
-class $$VaccineDefinitionsTableProcessedTableManager
-    extends ProcessedTableManager<
-        _$AppDatabase,
-        $VaccineDefinitionsTable,
-        VaccineDefinition,
-        $$VaccineDefinitionsTableFilterComposer,
-        $$VaccineDefinitionsTableOrderingComposer,
-        $$VaccineDefinitionsTableProcessedTableManager,
-        $$VaccineDefinitionsTableInsertCompanionBuilder,
-        $$VaccineDefinitionsTableUpdateCompanionBuilder> {
-  $$VaccineDefinitionsTableProcessedTableManager(super.$state);
-}
-
-class $$VaccineDefinitionsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $VaccineDefinitionsTable> {
-  $$VaccineDefinitionsTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get doseNumber => $state.composableBuilder(
-      column: $state.table.doseNumber,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get totalDoses => $state.composableBuilder(
-      column: $state.table.totalDoses,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get recommendedAgeMonths => $state.composableBuilder(
-      column: $state.table.recommendedAgeMonths,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get category => $state.composableBuilder(
-      column: $state.table.category,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ComposableFilter childVaccinesRefs(
-      ComposableFilter Function($$ChildVaccinesTableFilterComposer f) f) {
-    final $$ChildVaccinesTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $state.db.childVaccines,
-        getReferencedColumn: (t) => t.vaccineDefinitionId,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildVaccinesTableFilterComposer(ComposerState($state.db,
-                $state.db.childVaccines, joinBuilder, parentComposers)));
-    return f(composer);
-  }
-}
-
-class $$VaccineDefinitionsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $VaccineDefinitionsTable> {
-  $$VaccineDefinitionsTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get name => $state.composableBuilder(
-      column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get description => $state.composableBuilder(
-      column: $state.table.description,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get doseNumber => $state.composableBuilder(
-      column: $state.table.doseNumber,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get totalDoses => $state.composableBuilder(
-      column: $state.table.totalDoses,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get recommendedAgeMonths => $state.composableBuilder(
-      column: $state.table.recommendedAgeMonths,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get category => $state.composableBuilder(
-      column: $state.table.category,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-typedef $$ChildVaccinesTableInsertCompanionBuilder = ChildVaccinesCompanion
+typedef $$VaccineDefinitionsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $VaccineDefinitionsTable,
+    VaccineDefinition,
+    $$VaccineDefinitionsTableFilterComposer,
+    $$VaccineDefinitionsTableOrderingComposer,
+    $$VaccineDefinitionsTableAnnotationComposer,
+    $$VaccineDefinitionsTableCreateCompanionBuilder,
+    $$VaccineDefinitionsTableUpdateCompanionBuilder,
+    (VaccineDefinition, $$VaccineDefinitionsTableReferences),
+    VaccineDefinition,
+    PrefetchHooks Function({bool childVaccinesRefs})>;
+typedef $$ChildVaccinesTableCreateCompanionBuilder = ChildVaccinesCompanion
     Function({
   Value<int> id,
   required int childId,
@@ -2941,26 +3581,262 @@ typedef $$ChildVaccinesTableUpdateCompanionBuilder = ChildVaccinesCompanion
   Value<DateTime> createdAt,
 });
 
+final class $$ChildVaccinesTableReferences
+    extends BaseReferences<_$AppDatabase, $ChildVaccinesTable, ChildVaccine> {
+  $$ChildVaccinesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ChildrenTable _childIdTable(_$AppDatabase db) =>
+      db.children.createAlias(
+          $_aliasNameGenerator(db.childVaccines.childId, db.children.id));
+
+  $$ChildrenTableProcessedTableManager get childId {
+    final $_column = $_itemColumn<int>('child_id')!;
+
+    final manager = $$ChildrenTableTableManager($_db, $_db.children)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_childIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $VaccineDefinitionsTable _vaccineDefinitionIdTable(_$AppDatabase db) =>
+      db.vaccineDefinitions.createAlias($_aliasNameGenerator(
+          db.childVaccines.vaccineDefinitionId, db.vaccineDefinitions.id));
+
+  $$VaccineDefinitionsTableProcessedTableManager get vaccineDefinitionId {
+    final $_column = $_itemColumn<int>('vaccine_definition_id')!;
+
+    final manager =
+        $$VaccineDefinitionsTableTableManager($_db, $_db.vaccineDefinitions)
+            .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vaccineDefinitionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ChildVaccinesTableFilterComposer
+    extends Composer<_$AppDatabase, $ChildVaccinesTable> {
+  $$ChildVaccinesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get appliedDate => $composableBuilder(
+      column: $table.appliedDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get batch => $composableBuilder(
+      column: $table.batch, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$ChildrenTableFilterComposer get childId {
+    final $$ChildrenTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableFilterComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$VaccineDefinitionsTableFilterComposer get vaccineDefinitionId {
+    final $$VaccineDefinitionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.vaccineDefinitionId,
+        referencedTable: $db.vaccineDefinitions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$VaccineDefinitionsTableFilterComposer(
+              $db: $db,
+              $table: $db.vaccineDefinitions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ChildVaccinesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChildVaccinesTable> {
+  $$ChildVaccinesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get appliedDate => $composableBuilder(
+      column: $table.appliedDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get batch => $composableBuilder(
+      column: $table.batch, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$ChildrenTableOrderingComposer get childId {
+    final $$ChildrenTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableOrderingComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$VaccineDefinitionsTableOrderingComposer get vaccineDefinitionId {
+    final $$VaccineDefinitionsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.vaccineDefinitionId,
+        referencedTable: $db.vaccineDefinitions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$VaccineDefinitionsTableOrderingComposer(
+              $db: $db,
+              $table: $db.vaccineDefinitions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ChildVaccinesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChildVaccinesTable> {
+  $$ChildVaccinesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get appliedDate => $composableBuilder(
+      column: $table.appliedDate, builder: (column) => column);
+
+  GeneratedColumn<String> get batch =>
+      $composableBuilder(column: $table.batch, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ChildrenTableAnnotationComposer get childId {
+    final $$ChildrenTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.childId,
+        referencedTable: $db.children,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ChildrenTableAnnotationComposer(
+              $db: $db,
+              $table: $db.children,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$VaccineDefinitionsTableAnnotationComposer get vaccineDefinitionId {
+    final $$VaccineDefinitionsTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.vaccineDefinitionId,
+            referencedTable: $db.vaccineDefinitions,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$VaccineDefinitionsTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.vaccineDefinitions,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+}
+
 class $$ChildVaccinesTableTableManager extends RootTableManager<
     _$AppDatabase,
     $ChildVaccinesTable,
     ChildVaccine,
     $$ChildVaccinesTableFilterComposer,
     $$ChildVaccinesTableOrderingComposer,
-    $$ChildVaccinesTableProcessedTableManager,
-    $$ChildVaccinesTableInsertCompanionBuilder,
-    $$ChildVaccinesTableUpdateCompanionBuilder> {
+    $$ChildVaccinesTableAnnotationComposer,
+    $$ChildVaccinesTableCreateCompanionBuilder,
+    $$ChildVaccinesTableUpdateCompanionBuilder,
+    (ChildVaccine, $$ChildVaccinesTableReferences),
+    ChildVaccine,
+    PrefetchHooks Function({bool childId, bool vaccineDefinitionId})> {
   $$ChildVaccinesTableTableManager(_$AppDatabase db, $ChildVaccinesTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$ChildVaccinesTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$ChildVaccinesTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$ChildVaccinesTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$ChildVaccinesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChildVaccinesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChildVaccinesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int> childId = const Value.absent(),
             Value<int> vaccineDefinitionId = const Value.absent(),
@@ -2978,7 +3854,7 @@ class $$ChildVaccinesTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int childId,
             required int vaccineDefinitionId,
@@ -2996,136 +3872,75 @@ class $$ChildVaccinesTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ChildVaccinesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {childId = false, vaccineDefinitionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (childId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.childId,
+                    referencedTable:
+                        $$ChildVaccinesTableReferences._childIdTable(db),
+                    referencedColumn:
+                        $$ChildVaccinesTableReferences._childIdTable(db).id,
+                  ) as T;
+                }
+                if (vaccineDefinitionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.vaccineDefinitionId,
+                    referencedTable: $$ChildVaccinesTableReferences
+                        ._vaccineDefinitionIdTable(db),
+                    referencedColumn: $$ChildVaccinesTableReferences
+                        ._vaccineDefinitionIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ));
 }
 
-class $$ChildVaccinesTableProcessedTableManager extends ProcessedTableManager<
+typedef $$ChildVaccinesTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $ChildVaccinesTable,
     ChildVaccine,
     $$ChildVaccinesTableFilterComposer,
     $$ChildVaccinesTableOrderingComposer,
-    $$ChildVaccinesTableProcessedTableManager,
-    $$ChildVaccinesTableInsertCompanionBuilder,
-    $$ChildVaccinesTableUpdateCompanionBuilder> {
-  $$ChildVaccinesTableProcessedTableManager(super.$state);
-}
-
-class $$ChildVaccinesTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ChildVaccinesTable> {
-  $$ChildVaccinesTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get appliedDate => $state.composableBuilder(
-      column: $state.table.appliedDate,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get batch => $state.composableBuilder(
-      column: $state.table.batch,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  $$ChildrenTableFilterComposer get childId {
-    final $$ChildrenTableFilterComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.childId,
-        referencedTable: $state.db.children,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildrenTableFilterComposer(ComposerState(
-                $state.db, $state.db.children, joinBuilder, parentComposers)));
-    return composer;
-  }
-
-  $$VaccineDefinitionsTableFilterComposer get vaccineDefinitionId {
-    final $$VaccineDefinitionsTableFilterComposer composer = $state
-        .composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.vaccineDefinitionId,
-            referencedTable: $state.db.vaccineDefinitions,
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder, parentComposers) =>
-                $$VaccineDefinitionsTableFilterComposer(ComposerState(
-                    $state.db,
-                    $state.db.vaccineDefinitions,
-                    joinBuilder,
-                    parentComposers)));
-    return composer;
-  }
-}
-
-class $$ChildVaccinesTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ChildVaccinesTable> {
-  $$ChildVaccinesTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get appliedDate => $state.composableBuilder(
-      column: $state.table.appliedDate,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get batch => $state.composableBuilder(
-      column: $state.table.batch,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get notes => $state.composableBuilder(
-      column: $state.table.notes,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-      column: $state.table.createdAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  $$ChildrenTableOrderingComposer get childId {
-    final $$ChildrenTableOrderingComposer composer = $state.composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.childId,
-        referencedTable: $state.db.children,
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder, parentComposers) =>
-            $$ChildrenTableOrderingComposer(ComposerState(
-                $state.db, $state.db.children, joinBuilder, parentComposers)));
-    return composer;
-  }
-
-  $$VaccineDefinitionsTableOrderingComposer get vaccineDefinitionId {
-    final $$VaccineDefinitionsTableOrderingComposer composer =
-        $state.composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.vaccineDefinitionId,
-            referencedTable: $state.db.vaccineDefinitions,
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder, parentComposers) =>
-                $$VaccineDefinitionsTableOrderingComposer(ComposerState(
-                    $state.db,
-                    $state.db.vaccineDefinitions,
-                    joinBuilder,
-                    parentComposers)));
-    return composer;
-  }
-}
-
-typedef $$SettingsTableInsertCompanionBuilder = SettingsCompanion Function({
+    $$ChildVaccinesTableAnnotationComposer,
+    $$ChildVaccinesTableCreateCompanionBuilder,
+    $$ChildVaccinesTableUpdateCompanionBuilder,
+    (ChildVaccine, $$ChildVaccinesTableReferences),
+    ChildVaccine,
+    PrefetchHooks Function({bool childId, bool vaccineDefinitionId})>;
+typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
   required String key,
   required String value,
   Value<int> rowid,
@@ -3136,26 +3951,77 @@ typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
   Value<int> rowid,
 });
 
+class $$SettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnFilters(column));
+}
+
+class $$SettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SettingsTable> {
+  $$SettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
 class $$SettingsTableTableManager extends RootTableManager<
     _$AppDatabase,
     $SettingsTable,
     Setting,
     $$SettingsTableFilterComposer,
     $$SettingsTableOrderingComposer,
-    $$SettingsTableProcessedTableManager,
-    $$SettingsTableInsertCompanionBuilder,
-    $$SettingsTableUpdateCompanionBuilder> {
+    $$SettingsTableAnnotationComposer,
+    $$SettingsTableCreateCompanionBuilder,
+    $$SettingsTableUpdateCompanionBuilder,
+    (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+    Setting,
+    PrefetchHooks Function()> {
   $$SettingsTableTableManager(_$AppDatabase db, $SettingsTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$SettingsTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$SettingsTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$SettingsTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$SettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<String> key = const Value.absent(),
             Value<String> value = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -3165,7 +4031,7 @@ class $$SettingsTableTableManager extends RootTableManager<
             value: value,
             rowid: rowid,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             required String key,
             required String value,
             Value<int> rowid = const Value.absent(),
@@ -3175,52 +4041,29 @@ class $$SettingsTableTableManager extends RootTableManager<
             value: value,
             rowid: rowid,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$SettingsTableProcessedTableManager extends ProcessedTableManager<
+typedef $$SettingsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $SettingsTable,
     Setting,
     $$SettingsTableFilterComposer,
     $$SettingsTableOrderingComposer,
-    $$SettingsTableProcessedTableManager,
-    $$SettingsTableInsertCompanionBuilder,
-    $$SettingsTableUpdateCompanionBuilder> {
-  $$SettingsTableProcessedTableManager(super.$state);
-}
+    $$SettingsTableAnnotationComposer,
+    $$SettingsTableCreateCompanionBuilder,
+    $$SettingsTableUpdateCompanionBuilder,
+    (Setting, BaseReferences<_$AppDatabase, $SettingsTable, Setting>),
+    Setting,
+    PrefetchHooks Function()>;
 
-class $$SettingsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $SettingsTable> {
-  $$SettingsTableFilterComposer(super.$state);
-  ColumnFilters<String> get key => $state.composableBuilder(
-      column: $state.table.key,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$SettingsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $SettingsTable> {
-  $$SettingsTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get key => $state.composableBuilder(
-      column: $state.table.key,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get value => $state.composableBuilder(
-      column: $state.table.value,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class _$AppDatabaseManager {
+class $AppDatabaseManager {
   final _$AppDatabase _db;
-  _$AppDatabaseManager(this._db);
+  $AppDatabaseManager(this._db);
   $$ChildrenTableTableManager get children =>
       $$ChildrenTableTableManager(_db, _db.children);
   $$GrowthRecordsTableTableManager get growthRecords =>

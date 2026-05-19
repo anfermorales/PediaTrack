@@ -418,15 +418,15 @@ class BackupExportService {
     final jsonFiles = files.where((f) => f.path.endsWith('.json')).toList();
     final excelFiles = files.where((f) => f.path.endsWith('.xlsx')).toList();
 
-    if (jsonFiles.length > 5) {
+    if (jsonFiles.length > 3) {
       jsonFiles.sort((a, b) => a.path.compareTo(b.path));
-      for (var i = 0; i < jsonFiles.length - 5; i++) {
+      for (var i = 0; i < jsonFiles.length - 3; i++) {
         await jsonFiles[i].delete();
       }
     }
-    if (excelFiles.length > 5) {
+    if (excelFiles.length > 3) {
       excelFiles.sort((a, b) => a.path.compareTo(b.path));
-      for (var i = 0; i < excelFiles.length - 5; i++) {
+      for (var i = 0; i < excelFiles.length - 3; i++) {
         await excelFiles[i].delete();
       }
     }
@@ -455,14 +455,24 @@ class BackupRunLogService {
   const BackupRunLogService._();
 
   static Future<void> markRun({
+    required AppDatabase db,
     required String status,
+    required String trigger,
     String? details,
   }) async {
-    final db = AppDatabase();
-    await db.setSetting('backup_last_run_at', DateTime.now().toIso8601String());
+    final nowIso = DateTime.now().toIso8601String();
+    await db.setSetting('backup_last_run_at', nowIso);
+    await db.setSetting('backup_last_trigger', trigger);
     final message = details == null || details.trim().isEmpty
         ? status
         : '$status: ${details.trim()}';
     await db.setSetting('backup_last_status', message);
+    if (trigger == 'auto') {
+      await db.setSetting('backup_last_auto_run_at', nowIso);
+      await db.setSetting('backup_last_auto_status', message);
+    } else if (trigger == 'manual') {
+      await db.setSetting('backup_last_manual_run_at', nowIso);
+      await db.setSetting('backup_last_manual_status', message);
+    }
   }
 }

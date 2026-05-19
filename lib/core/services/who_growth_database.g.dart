@@ -218,6 +218,20 @@ class WhoLmsDataData extends DataClass implements Insertable<WhoLmsDataData> {
         m: m ?? this.m,
         s: s ?? this.s,
       );
+  WhoLmsDataData copyWithCompanion(WhoLmsDataCompanion data) {
+    return WhoLmsDataData(
+      id: data.id.present ? data.id.value : this.id,
+      ageMonths: data.ageMonths.present ? data.ageMonths.value : this.ageMonths,
+      measurementType: data.measurementType.present
+          ? data.measurementType.value
+          : this.measurementType,
+      gender: data.gender.present ? data.gender.value : this.gender,
+      l: data.l.present ? data.l.value : this.l,
+      m: data.m.present ? data.m.value : this.m,
+      s: data.s.present ? data.s.value : this.s,
+    );
+  }
+
   @override
   String toString() {
     return (StringBuffer('WhoLmsDataData(')
@@ -362,7 +376,7 @@ class WhoLmsDataCompanion extends UpdateCompanion<WhoLmsDataData> {
 
 abstract class _$WhoGrowthDatabase extends GeneratedDatabase {
   _$WhoGrowthDatabase(QueryExecutor e) : super(e);
-  _$WhoGrowthDatabaseManager get managers => _$WhoGrowthDatabaseManager(this);
+  $WhoGrowthDatabaseManager get managers => $WhoGrowthDatabaseManager(this);
   late final $WhoLmsDataTable whoLmsData = $WhoLmsDataTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -371,7 +385,7 @@ abstract class _$WhoGrowthDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [whoLmsData];
 }
 
-typedef $$WhoLmsDataTableInsertCompanionBuilder = WhoLmsDataCompanion Function({
+typedef $$WhoLmsDataTableCreateCompanionBuilder = WhoLmsDataCompanion Function({
   Value<int> id,
   required int ageMonths,
   required String measurementType,
@@ -390,26 +404,127 @@ typedef $$WhoLmsDataTableUpdateCompanionBuilder = WhoLmsDataCompanion Function({
   Value<double> s,
 });
 
+class $$WhoLmsDataTableFilterComposer
+    extends Composer<_$WhoGrowthDatabase, $WhoLmsDataTable> {
+  $$WhoLmsDataTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get ageMonths => $composableBuilder(
+      column: $table.ageMonths, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get measurementType => $composableBuilder(
+      column: $table.measurementType,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get gender => $composableBuilder(
+      column: $table.gender, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get l => $composableBuilder(
+      column: $table.l, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get m => $composableBuilder(
+      column: $table.m, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get s => $composableBuilder(
+      column: $table.s, builder: (column) => ColumnFilters(column));
+}
+
+class $$WhoLmsDataTableOrderingComposer
+    extends Composer<_$WhoGrowthDatabase, $WhoLmsDataTable> {
+  $$WhoLmsDataTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get ageMonths => $composableBuilder(
+      column: $table.ageMonths, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get measurementType => $composableBuilder(
+      column: $table.measurementType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get gender => $composableBuilder(
+      column: $table.gender, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get l => $composableBuilder(
+      column: $table.l, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get m => $composableBuilder(
+      column: $table.m, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get s => $composableBuilder(
+      column: $table.s, builder: (column) => ColumnOrderings(column));
+}
+
+class $$WhoLmsDataTableAnnotationComposer
+    extends Composer<_$WhoGrowthDatabase, $WhoLmsDataTable> {
+  $$WhoLmsDataTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get ageMonths =>
+      $composableBuilder(column: $table.ageMonths, builder: (column) => column);
+
+  GeneratedColumn<String> get measurementType => $composableBuilder(
+      column: $table.measurementType, builder: (column) => column);
+
+  GeneratedColumn<int> get gender =>
+      $composableBuilder(column: $table.gender, builder: (column) => column);
+
+  GeneratedColumn<double> get l =>
+      $composableBuilder(column: $table.l, builder: (column) => column);
+
+  GeneratedColumn<double> get m =>
+      $composableBuilder(column: $table.m, builder: (column) => column);
+
+  GeneratedColumn<double> get s =>
+      $composableBuilder(column: $table.s, builder: (column) => column);
+}
+
 class $$WhoLmsDataTableTableManager extends RootTableManager<
     _$WhoGrowthDatabase,
     $WhoLmsDataTable,
     WhoLmsDataData,
     $$WhoLmsDataTableFilterComposer,
     $$WhoLmsDataTableOrderingComposer,
-    $$WhoLmsDataTableProcessedTableManager,
-    $$WhoLmsDataTableInsertCompanionBuilder,
-    $$WhoLmsDataTableUpdateCompanionBuilder> {
+    $$WhoLmsDataTableAnnotationComposer,
+    $$WhoLmsDataTableCreateCompanionBuilder,
+    $$WhoLmsDataTableUpdateCompanionBuilder,
+    (
+      WhoLmsDataData,
+      BaseReferences<_$WhoGrowthDatabase, $WhoLmsDataTable, WhoLmsDataData>
+    ),
+    WhoLmsDataData,
+    PrefetchHooks Function()> {
   $$WhoLmsDataTableTableManager(_$WhoGrowthDatabase db, $WhoLmsDataTable table)
       : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer:
-              $$WhoLmsDataTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$WhoLmsDataTableOrderingComposer(ComposerState(db, table)),
-          getChildManagerBuilder: (p) =>
-              $$WhoLmsDataTableProcessedTableManager(p),
-          getUpdateCompanionBuilder: ({
+          createFilteringComposer: () =>
+              $$WhoLmsDataTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WhoLmsDataTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WhoLmsDataTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int> ageMonths = const Value.absent(),
             Value<String> measurementType = const Value.absent(),
@@ -427,7 +542,7 @@ class $$WhoLmsDataTableTableManager extends RootTableManager<
             m: m,
             s: s,
           ),
-          getInsertCompanionBuilder: ({
+          createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int ageMonths,
             required String measurementType,
@@ -445,102 +560,32 @@ class $$WhoLmsDataTableTableManager extends RootTableManager<
             m: m,
             s: s,
           ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ));
 }
 
-class $$WhoLmsDataTableProcessedTableManager extends ProcessedTableManager<
+typedef $$WhoLmsDataTableProcessedTableManager = ProcessedTableManager<
     _$WhoGrowthDatabase,
     $WhoLmsDataTable,
     WhoLmsDataData,
     $$WhoLmsDataTableFilterComposer,
     $$WhoLmsDataTableOrderingComposer,
-    $$WhoLmsDataTableProcessedTableManager,
-    $$WhoLmsDataTableInsertCompanionBuilder,
-    $$WhoLmsDataTableUpdateCompanionBuilder> {
-  $$WhoLmsDataTableProcessedTableManager(super.$state);
-}
+    $$WhoLmsDataTableAnnotationComposer,
+    $$WhoLmsDataTableCreateCompanionBuilder,
+    $$WhoLmsDataTableUpdateCompanionBuilder,
+    (
+      WhoLmsDataData,
+      BaseReferences<_$WhoGrowthDatabase, $WhoLmsDataTable, WhoLmsDataData>
+    ),
+    WhoLmsDataData,
+    PrefetchHooks Function()>;
 
-class $$WhoLmsDataTableFilterComposer
-    extends FilterComposer<_$WhoGrowthDatabase, $WhoLmsDataTable> {
-  $$WhoLmsDataTableFilterComposer(super.$state);
-  ColumnFilters<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get ageMonths => $state.composableBuilder(
-      column: $state.table.ageMonths,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get measurementType => $state.composableBuilder(
-      column: $state.table.measurementType,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<int> get gender => $state.composableBuilder(
-      column: $state.table.gender,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get l => $state.composableBuilder(
-      column: $state.table.l,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get m => $state.composableBuilder(
-      column: $state.table.m,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get s => $state.composableBuilder(
-      column: $state.table.s,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-}
-
-class $$WhoLmsDataTableOrderingComposer
-    extends OrderingComposer<_$WhoGrowthDatabase, $WhoLmsDataTable> {
-  $$WhoLmsDataTableOrderingComposer(super.$state);
-  ColumnOrderings<int> get id => $state.composableBuilder(
-      column: $state.table.id,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get ageMonths => $state.composableBuilder(
-      column: $state.table.ageMonths,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get measurementType => $state.composableBuilder(
-      column: $state.table.measurementType,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<int> get gender => $state.composableBuilder(
-      column: $state.table.gender,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get l => $state.composableBuilder(
-      column: $state.table.l,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get m => $state.composableBuilder(
-      column: $state.table.m,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get s => $state.composableBuilder(
-      column: $state.table.s,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-}
-
-class _$WhoGrowthDatabaseManager {
+class $WhoGrowthDatabaseManager {
   final _$WhoGrowthDatabase _db;
-  _$WhoGrowthDatabaseManager(this._db);
+  $WhoGrowthDatabaseManager(this._db);
   $$WhoLmsDataTableTableManager get whoLmsData =>
       $$WhoLmsDataTableTableManager(_db, _db.whoLmsData);
 }

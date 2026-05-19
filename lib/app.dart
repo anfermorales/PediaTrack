@@ -206,18 +206,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final selectedChildId = ref.watch(selectedChildIdProvider);
 
     return Scaffold(
-      appBar: AppBar(
+appBar: AppBar(
         leading: IconButton(
-          icon: Icon(
-            ref.watch(themeModeProvider) == ThemeMode.dark
-                ? Icons.light_mode_outlined
-                : Icons.dark_mode_outlined,
-          ),
+          icon: Icon(ref.watch(themeModeProvider) == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
           onPressed: () {
-            final newMode = ref.read(themeModeProvider) == ThemeMode.dark
-                ? ThemeMode.light
-                : ThemeMode.dark;
-            ref.read(themeModeProvider.notifier).state = newMode;
+            ref.read(themeModeProvider.notifier).toggleTheme();
           },
         ),
         title: Row(

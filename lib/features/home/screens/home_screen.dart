@@ -75,10 +75,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         backgroundColor: isDark ? AppColors.darkSurface : null,
         foregroundColor: isDark ? AppColors.darkTextPrimary : null,
         leading: IconButton(
-          icon: Icon(ref.watch(themeModeProvider) == ThemeMode.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+          icon: Icon(ref.watch(themeModeProvider) == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
           onPressed: () {
-            final newMode = ref.read(themeModeProvider) == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-            ref.read(themeModeProvider.notifier).state = newMode;
+            ref.read(themeModeProvider.notifier).toggleTheme();
           },
         ),
         title: Row(

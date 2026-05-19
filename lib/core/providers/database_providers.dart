@@ -3,7 +3,57 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+  return ThemeModeNotifier(ref.watch(databaseProvider));
+});
+
+class ThemeModeNotifier extends StateNotifier<ThemeMode> {
+  final AppDatabase _db;
+  bool _initialized = false;
+
+  ThemeModeNotifier(this._db) : super(ThemeMode.system) {
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    if (_initialized) return;
+    final saved = await _db.getSetting('theme_mode');
+    state = _themeFromString(saved);
+    _initialized = true;
+  }
+
+  ThemeMode _themeFromString(String? value) {
+    switch (value) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  String _themeToString(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'light';
+      case ThemeMode.dark:
+        return 'dark';
+      case ThemeMode.system:
+        return 'system';
+    }
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = mode;
+    await _db.setSetting('theme_mode', _themeToString(mode));
+  }
+
+  Future<void> toggleTheme() async {
+    final newMode = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    await setThemeMode(newMode);
+  }
+}
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();

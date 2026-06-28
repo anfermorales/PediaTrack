@@ -30,7 +30,7 @@ class _EnhancedVaccinesScreenState extends ConsumerState<EnhancedVaccinesScreen>
       return Scaffold(
         key: ValueKey('vaccines-empty-${brightness.name}'),
         appBar: AppBar(title: const Text('Vacunas')),
-        body: const Center(child: Text('Selecciona un niÃ±o para ver sus vacunas')),
+        body: const Center(child: Text('Selecciona un niño para ver sus vacunas')),
       );
     }
 
@@ -181,12 +181,12 @@ class _VaccineList extends ConsumerWidget {
                         ],
                       ),
                       const Spacer(),
-                      if (item.appliedVaccine != null)
+                      if (item.mostRecentApplied != null)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text('Aplicada', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline)),
-                            Text(DateFormat('dd/MM/yy').format(item.appliedVaccine!.appliedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                            Text(DateFormat('dd/MM/yy').format(item.mostRecentApplied!.appliedDate), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                           ],
                         )
                       else
@@ -230,9 +230,9 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
   @override
   void initState() {
     super.initState();
-    _date = widget.item.appliedVaccine?.appliedDate ?? DateTime.now();
-    _batch = TextEditingController(text: widget.item.appliedVaccine?.batch ?? '');
-    _notes = TextEditingController(text: widget.item.appliedVaccine?.notes ?? '');
+    _date = widget.item.mostRecentApplied?.appliedDate ?? DateTime.now();
+    _batch = TextEditingController(text: widget.item.mostRecentApplied?.batch ?? '');
+    _notes = TextEditingController(text: widget.item.mostRecentApplied?.notes ?? '');
   }
 
   @override
@@ -244,7 +244,7 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = widget.item.appliedVaccine != null;
+    final isCompleted = widget.item.mostRecentApplied != null;
     final keyboard = MediaQuery.of(context).viewInsets.bottom;
     final bottomSafe = MediaQuery.of(context).viewPadding.bottom;
 
@@ -360,9 +360,9 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
 
   Future<void> _save() async {
     final db = ref.read(databaseProvider);
-    if (widget.item.appliedVaccine != null) {
+    if (widget.item.mostRecentApplied != null) {
       await db.updateChildVaccine(
-        widget.item.appliedVaccine!.id,
+        widget.item.mostRecentApplied!.id,
         appliedDate: _date,
         batch: _batch.text.trim().isEmpty ? null : _batch.text.trim(),
         notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
@@ -380,7 +380,7 @@ class _VaccineSheetState extends ConsumerState<_VaccineSheet> {
     if (!mounted) return;
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(widget.item.appliedVaccine != null ? 'Vacuna actualizada' : 'Vacuna registrada')),
+      SnackBar(content: Text(widget.item.mostRecentApplied != null ? 'Vacuna actualizada' : 'Vacuna registrada')),
     );
   }
 }

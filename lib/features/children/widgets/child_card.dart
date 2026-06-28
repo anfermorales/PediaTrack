@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/common_widgets.dart';
 
@@ -27,8 +28,7 @@ class ChildCard extends StatelessWidget {
   });
 
   int get _ageMonths {
-    final now = DateTime.now();
-    return ((now.year - birthDate.year) * 12 + (now.month - birthDate.month)).clamp(0, 60);
+    return AgeCalculator.completedMonths(birthDate).clamp(0, 60);
   }
 
   String get _ageDisplay {

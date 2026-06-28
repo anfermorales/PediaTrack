@@ -1,0 +1,403 @@
+{
+  "@@locale": "es",
+  "appName": "PediaTrack",
+  "@appName": {
+    "description": "The application name"
+  },
+  "start": "Inicio",
+  "growth": "Crecimiento",
+  "habits": "Hábitos",
+  "vaccines": "Vacunas",
+  "alerts": "Alertas",
+  "exit": "Salir",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "add": "Agregar",
+  "register": "Registrar",
+  "confirm": "Confirmar",
+  "exitConfirm": "¿Estás seguro de que quieres salir de PediaTrack?",
+  "childName": "Nombre",
+  "birthDate": "Fecha de Nacimiento",
+  "gender": "Género",
+  "selectChild": "Selecciona un niño para ver su información",
+  "selectChildForGrowth": "Selecciona un niño para ver su crecimiento",
+  "selectChildForHabits": "Selecciona un niño para ver sus Hábitos",
+  "selectChildForAlerts": "Selecciona un niño para ver sus alertas de salud",
+  "selectChildForVaccines": "Selecciona un niño para ver sus vacunas",
+  "welcomeToPediaTrack": "¡Bienvenido a PediaTrack!",
+  "welcomeSubtitle": "Registra a tu primer niño para comenzar a monitorear su crecimiento y Hábitos.",
+  "addFirstChild": "Agregar Primer niño",
+  "selectChildTitle": "Seleccionar Hijo",
+  "noChildSelected": "Selecciona un niño para ver su información",
+  "quickSuggestion": "Sugerencia rápida",
+  "quickSuggestionSubtitle": "Para registrar más fácil",
+  "quickSuggestionHint": "Usa el botón \"Registrar\" para guardar Consulta o Hábito desde cualquier pantalla principal.",
+  "noData": "Sin dato",
+  "withoutData": "Sin dato",
+  "error": "Error",
+  "age": "Edad",
+  "weight": "Peso",
+  "height": "Estatura",
+  "birthWeight": "Peso al nacer",
+  "birthHeight": "Estatura al nacer",
+  "birthData": "Datos al Nacer",
+  "birthDataSubtitle": "Registro inicial",
+  "birthRecord": "Registro inicial",
+  "growth": "Crecimiento",
+  "recentGrowth": "Crecimiento Reciente",
+  "lastRecord": "Último registro: {date}",
+  "@lastRecord": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noGrowthRecords": "Sin registros de crecimiento",
+  "addRecord": "Agregar registro",
+  "showRecords": "Mostrar:",
+  "fiveRecords": "5 registros",
+  "tenRecords": "10 registros",
+  "twentyRecords": "20 registros",
+  "allRecords": "Todos",
+  "recentRecords": "Registros Recientes",
+  "whoGrowthCurves": "Curvas de Crecimiento OMS",
+  "weightCurve": "Curva de Peso",
+  "heightCurve": "Curva de Estatura",
+  "compareWithWHO": "Comparación con curvas OMS",
+  "growthHistory": "Historial de Crecimiento",
+  "monthsOfAge": "{months} meses de edad",
+  "@monthsOfAge": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteRecord": "Eliminar registro",
+  "deleteRecordConfirm": "¿Seguro que deseas eliminar este registro de crecimiento?",
+  "habitsOfToday": "Hábitos de Hoy",
+  "noRecordsToday": "Sin registros hoy",
+  "todayRecords": "{count} registros",
+  "@todayRecords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "registerIntestinalHabits": "Registra los Hábitos intestinales del día.",
+  "vaccineTitle": "Vacunas",
+  "vaccinesCompleted": "{completed} completadas, {upcoming} próximas, {overdue} atrasadas",
+  "@vaccinesCompleted": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "upcoming": {
+        "type": "int"
+      },
+      "overdue": {
+        "type": "int"
+      }
+    }
+  },
+  "overdueVaccines": "{count} vacuna(s) atrasada(s)",
+  "@overdueVaccines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "upcomingVaccines": "{count} vacuna(s) próxima(s) en el mes",
+  "@upcomingVaccines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "measureRecord": "Registrar Medidas",
+  "heightCm": "Estatura (cm)",
+  "headCircumference": "Perímetro craneal (cm)",
+  "bothFieldsOptional": "Ambos campos son opcionales",
+  "enterAtLeastOneMeasure": "Ingresa al menos una medida",
+  "measuresRegistered": "Medidas registradas",
+  "measureUnit": "cm",
+  "weightUnit": "lb",
+  "date": "Fecha",
+  "settings": "Configuración",
+  "autoBackup": "Respaldo Automático",
+  "autoBackupTitle": "Respaldo automático",
+  "autoBackupSubtitle": "Crear backup cada día",
+  "backupTime": "Hora del respaldo",
+  "backupFolder": "Carpeta de respaldo",
+  "folderName": "Nombre de carpeta",
+  "folderHint": "Ej: PediaTrack",
+  "nextBackup": "Próximo respaldo",
+  "runNow": "Ejecutar ahora",
+  "runNowSubtitle": "Generar backup manualmente",
+  "forceAutoBackup": "Forzar respaldo automático",
+  "forceAutoBackupSubtitle": "Prueba del sistema de respaldo",
+  "lastBackup": "Último respaldo",
+  "lastBackupAuto": "Último automático",
+  "lastBackupManual": "Último manual",
+  "automaticLabel": "Automático",
+  "manualLabel": "Manual",
+  "generatingBackup": "Generando respaldo...",
+  "backupGenerated": "Respaldo guardado en: {path}",
+  "@backupGenerated": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "nextBackupScheduled": "Próximo respaldo: {datetime}",
+  "@nextBackupScheduled": {
+    "placeholders": {
+      "datetime": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImport": "Exportar / Importar",
+  "exportData": "Exportar datos",
+  "exportDataSubtitle": "Compartir o descargar respaldo JSON y Excel",
+  "importBackup": "Importar respaldo",
+  "importBackupSubtitle": "Cargar un archivo JSON de respaldo",
+  "importBackupConfirm": "Esto reemplazará todos los datos actuales. ¿Deseas continuar?",
+  "importSuccess": "Respaldo importado correctamente",
+  "shareJson": "Compartir JSON",
+  "shareJsonSubtitle": "Enviar por correo o WhatsApp",
+  "downloadJson": "Descargar JSON",
+  "downloadJsonSubtitle": "Guardar archivo localmente",
+  "shareExcel": "Compartir Excel",
+  "shareExcelSubtitle": "Enviar por correo o WhatsApp",
+  "downloadExcel": "Descargar Excel",
+  "downloadExcelSubtitle": "Guardar archivo localmente",
+  "backupReadyToShare": "Respaldo JSON listo para compartir",
+  "backupReadyToShareExcel": "Respaldo Excel listo para compartir",
+  "exportError": "No se pudo exportar: {error}",
+  "@exportError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "saveBackup": "Guardar respaldo",
+  "jsonBackupSaved": "Respaldo guardado en: {path}",
+  "@jsonBackupSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "excelSaved": "Excel guardado en: {path}",
+  "@excelSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "about": "Acerca de",
+  "version": "Versión",
+  "versionNumber": "1.0.0",
+  "developedWith": "Desarrollado con",
+  "developedWithValue": "Flutter + Riverpod",
+  "child": "niño",
+  "childNotFound": "niño no encontrado",
+  "masculine": "Masculino",
+  "femenine": "Femenino",
+  "boy": "Niño",
+  "girl": "Niña",
+  "habitType": "Tipo de hábito",
+  "normalEvacuation": "Evacuación normal",
+  "constipation": "Estreñimiento",
+  "diarrhea": "Diarrea",
+  "feeding": "Alimentación",
+  "sleep": "Sueño",
+  "hydration": "Hidratación",
+  "medication": "Medicación",
+  "otherHabit": "Otro habito",
+  "observations": "Observaciones (opcional)",
+  "observationsOptional": "Observaciones (opcional)",
+  "addChild": "Agregar niño",
+  "editChild": "Editar niño",
+  "enterChildName": "Ingresa el nombre del niño",
+  "childAdded": "{name} agregado exitosamente",
+  "@childAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "childUpdated": "{name} actualizado exitosamente",
+  "@childUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "consultationRecord": "Registro de Consulta",
+  "weightHeightHead": "Peso, Estatura y Perímetro Craneal",
+  "enterAtLeastOneValue": "Ingresa al menos un valor. Los demás son opcionales.",
+  "recordSaved": "Registro guardado exitosamente",
+  "registerHabit": "Registrar Hábito",
+  "selectHabit": "Selecciona hábito",
+  "habitRegistered": "Hábito registrado exitosamente",
+  "stats": "Estadísticas",
+  "noEnoughData": "Sin datos suficientes",
+  "registerDaysForStats": "Registra al menos 3 días para ver Estadísticas",
+  "frequency": "Frecuencia",
+  "total": "Total",
+  "constipationDays": "Estreñimiento",
+  "timesPerWeek": "veces/semana",
+  "records": "registros",
+  "days": "días",
+  "distribution": "Distribución:",
+  "normal": "Normal",
+  "evaluating": "Evaluando...",
+  "noPreviousData": "Sin datos previos",
+  "improving": "Mejorando",
+  "worsening": "Empeorando",
+  "noChanges": "Sin cambios",
+  "historyOfDefecations": "Historial de Defecaciones",
+  "historySubtitle": "Registro completo",
+  "noRecords": "Sin registros",
+  "recordsCount": "{count} registro(s)",
+  "@recordsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteHabit": "Eliminar hábito",
+  "deleteHabitConfirm": "¿Seguro que deseas eliminar este registro de hábito?",
+  "editHabit": "Editar hábito",
+  "dateAndTime": "Fecha y hora",
+  "emptyAlerts": "¡Sin Alertas!",
+  "noPendingNotifications": "No hay notificaciones pendientes",
+  "noAlertsForSelectedChild": "No hay alertas para el niño seleccionado",
+  "dose": "Dosis {current}/{total}",
+  "@dose": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "pending": "Pendientes",
+  "completed": "Completadas",
+  "all": "Todas",
+  "completedStatus": "Completada",
+  "overdueStatus": "Atrasada",
+  "pendingStatus": "Pendiente",
+  "recommendedDate": "Fecha recomendada",
+  "applied": "Aplicada",
+  "touchToRegister": "Toca para registrar",
+  "editVaccine": "Editar Vacuna",
+  "registerVaccine": "Registrar Vacuna",
+  "vaccine": "Vacuna",
+  "batchOptional": "Lote (opcional)",
+  "batchNumber": "Número de lote (opcional)",
+  "vaccineUpdated": "Vacuna actualizada",
+  "vaccineRegistered": "Vacuna registrada",
+  "vaccine": "Vacuna",
+  "recordsTitle": "Registros",
+  "currentWeight": "Peso actual",
+  "currentHeight": "Estatura actual",
+  "currentRecords": "{count} registros",
+  "@currentRecords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "atBirth": "al nacer",
+  "atMonth": "al mes",
+  "atMonths": "a los {months} meses",
+  "@atMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "atYear": "al año",
+  "atYears": "a los {years} años",
+  "@atYears": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "atYearsAndMonths": "a los {years} años y {months} meses",
+  "@atYearsAndMonths": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "atYearsAndOneMonth": "a los {years} años y 1 mes",
+  "@atYearsAndOneMonth": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "intestinalHabitControl": "Control de Hábitos intestinales",
+  "recommendedAtMonths": "Recomendada a los {months} meses",
+  "@recommendedAtMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "vaccineAdded": "¡Vacuna registrada!",
+  "addVaccine": "Agregar",
+  "addVaccineTitle": "Agregar Vacuna",
+  "selectVaccine": "Selecciona una vacuna",
+  "vaccineAddedSuccess": "Vacuna agregada",
+  "vaccineDeleted": "Vacuna eliminada",
+  "deleteVaccineConfirm": "¿Eliminar el registro de {name}?",
+  "@deleteVaccineConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noVaccinesPending": "¡No hay vacunas pendientes!",
+  "noCompletedVaccines": "Aún no hay vacunas completadas",
+  "noVaccinesRegistered": "Sin vacunas registradas",
+  "addFirstVaccines": "Agrega las primeras vacunas para hacer seguimiento",
+  "loading": "Cargando...",
+  "searchingChild": "Buscando niño...",
+  "years": "años",
+  "year": "año",
+  "months": "meses",
+  "month": "mes",
+  "lb": "lb",
+  "cm": "cm"
+}

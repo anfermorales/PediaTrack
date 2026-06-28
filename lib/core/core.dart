@@ -7,6 +7,7 @@ export 'services/backup_export_service.dart';
 export 'services/notification_service.dart';
 export 'services/who_growth_service.dart';
 export 'theme/app_theme.dart';
+export 'utils/age_calculator.dart';
 export 'widgets/who_growth_chart.dart';
 
 // Re-export shared theme

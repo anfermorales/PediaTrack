@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/providers/database_providers.dart';
+import '../../../core/utils/age_calculator.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/common_widgets.dart';
 import '../models/child_model.dart';
@@ -117,8 +118,7 @@ class ChildrenListScreen extends ConsumerWidget {
   Widget _buildChildCard(BuildContext context, WidgetRef ref, dynamic childData) {
     final child = childData;
     final birthDate = child.birthDate as DateTime;
-    final now = DateTime.now();
-    final ageMonths = ((now.year - birthDate.year) * 12 + (now.month - birthDate.month)).clamp(0, 60);
+    final ageMonths = AgeCalculator.completedMonths(birthDate).clamp(0, 60);
     final ageDisplay = _formatAge(ageMonths);
 
     return Container(

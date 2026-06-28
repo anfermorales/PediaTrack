@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 import 'package:pediatrack/data/database/app_database.dart';
+import 'package:pediatrack/l10n/generated/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/common_widgets.dart';
 
@@ -15,6 +16,7 @@ class HabitsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedChildId = ref.watch(selectedChildIdProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -22,12 +24,12 @@ class HabitsScreen extends ConsumerWidget {
       return Scaffold(
         backgroundColor: isDark ? AppColors.darkBackground : null,
         appBar: AppBar(
-          title: const Text('Hábitos'),
+          title: Text(l10n.habits),
           backgroundColor: isDark ? AppColors.darkSurface : null,
         ),
         body: Center(
           child: Text(
-            'Selecciona un niño para ver sus hábitos',
+            l10n.selectChildForHabits,
             style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100),
           ),
         ),

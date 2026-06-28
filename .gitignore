@@ -61,3 +61,13 @@ pubspec.lock
 .packages
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# AI Agent / IDE tool directories
+.mavis/
+.opencode/
+.serena/
+
+# Local build artifacts
+*.apk
+*.aab
+fix-*.patch

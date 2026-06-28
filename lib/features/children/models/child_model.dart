@@ -1,6 +1,7 @@
 // lib/features/children/models/child_model.dart
 
 import 'package:drift/drift.dart' as drift;
+import 'package:pediatrack/core/utils/age_calculator.dart';
 
 /// Modelo inmutable para datos del niño
 /// Reemplaza el uso de clases mutables con final fields
@@ -25,11 +26,9 @@ class ChildModel {
     this.updatedAt,
   });
 
-  /// Edad en meses desde la fecha de nacimiento
+  /// Edad en meses cumplidos desde la fecha de nacimiento (máx. 60 para UI).
   int get ageMonths {
-    final now = DateTime.now();
-    return ((now.year - birthDate.year) * 12 + (now.month - birthDate.month))
-        .clamp(0, 60);
+    return AgeCalculator.completedMonths(birthDate).clamp(0, 60);
   }
 
   /// Edad en formato legible (X años, Y meses)

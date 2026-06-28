@@ -1,14 +1,34 @@
+// =============================================================================
+// ARCHIVO NO UTILIZADO EN LA APP ACTIVA.
+// -----------------------------------------------------------------------------
+// La version que se renderiza en `MainNavigation` es
+// `EnhancedVaccinesScreen`, definida en `lib/enhanced_vaccines_screen.dart`.
+// Este archivo fue un intento previo de modularizar la pantalla de vacunas
+// que no llego a activarse.
+//
+// Mantener este archivo aqui (en lugar de eliminarlo) conserva:
+//   * Las mejoras aplicadas (centralizacion de `VaccineStatusCalculator`,
+//     uso de `vaccineScheduleProvider`, l10n, tipos correctos) como
+//     referencia para cuando se haga la migracion final.
+//   * Cobertura parcial del codigo de features.
+//
+// TODO: Reemplazar `EnhancedVaccinesScreen` por esta version (o migrar las
+// mejoras aqui presentes a `enhanced_vaccines_screen.dart`) y actualizar
+// `MainNavigation` para que consuma el codigo de features.
+// =============================================================================
+
 import 'dart:math' as math;
 
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 import 'package:pediatrack/data/database/app_database.dart';
+import 'package:pediatrack/l10n/generated/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/animations_widgets.dart';
-import '../../../shared/widgets/common_widgets.dart';
 
 /// Pantalla de vacunas con animaciones y swipe
 class VaccinesScreen extends ConsumerWidget {
@@ -65,7 +85,8 @@ class _VaccinesContentState extends ConsumerState<_VaccinesContent> with SingleT
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final vaccinesAsync = ref.watch(childVaccinesWithDefinitionsProvider(widget.childId));
+    final vaccinesAsync = ref.watch(vaccineScheduleProvider(widget.childId));
+    final l10n = AppLocalizations.of(context)!;
 
     return ConfettiOverlay(
       trigger: _showConfetti,
@@ -75,53 +96,44 @@ class _VaccinesContentState extends ConsumerState<_VaccinesContent> with SingleT
         appBar: AppBar(
           backgroundColor: isDark ? AppColors.darkSurface : null,
           foregroundColor: isDark ? AppColors.darkTextPrimary : null,
-          title: const Text('Vacunas'),
+          title: Text(l10n.vaccineTitle),
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: AppColors.warning,
             labelColor: AppColors.warning,
             unselectedLabelColor: isDark ? AppColors.darkTextSecondary : AppColors.grey100,
-            tabs: const [
-              Tab(text: '⏳ Pendientes'),
-              Tab(text: '✅ Completadas'),
-              Tab(text: '📋 Todas'),
+            tabs: [
+              Tab(text: '⏳ ${l10n.pending}'),
+              Tab(text: '✅ ${l10n.completed}'),
+              Tab(text: '📋 ${l10n.all}'),
             ],
           ),
         ),
         body: vaccinesAsync.when(
           data: (vaccines) {
             if (vaccines.isEmpty) {
-              return EmptyStateCard(icon: Icons.vaccines, title: 'Sin vacunas registradas', subtitle: 'Agrega las primeras vacunas para hacer seguimiento', buttonText: 'Agregar Vacuna', onButtonPressed: () => _showAddVaccineSheet(context), iconColor: AppColors.warning);
+              return EmptyStateCard(icon: Icons.vaccines, title: l10n.noVaccinesRegistered, subtitle: l10n.addFirstVaccines, buttonText: l10n.addVaccineTitle, onButtonPressed: () => _showAddVaccineSheet(context), iconColor: AppColors.warning);
             }
 
-            final pending = vaccines.where((v) => v.appliedVaccine == null && !_isOverdue(v.definition.recommendedAgeMonths)).toList();
-            final completed = vaccines.where((v) => v.appliedVaccine != null).toList();
-            final overdue = vaccines.where((v) => v.appliedVaccine == null && _isOverdue(v.definition.recommendedAgeMonths)).toList();
+            final pending = vaccines.where((v) => !v.isCompleted && !v.isOverdue).toList();
+            final completed = vaccines.where((v) => v.isCompleted).toList();
+            final overdue = vaccines.where((v) => !v.isCompleted && v.isOverdue).toList();
 
             return TabBarView(
               controller: _tabController,
               children: [
-                _VaccineList(vaccines: [...overdue, ...pending], emptyMessage: '¡No hay vacunas pendientes! 🎉', emptyIcon: Icons.check_circle, childId: widget.childId, onComplete: _triggerConfetti),
-                _VaccineList(vaccines: completed, emptyMessage: 'Aún no hay vacunas completadas', emptyIcon: Icons.schedule, childId: widget.childId, onComplete: _triggerConfetti),
-                _VaccineList(vaccines: vaccines, emptyMessage: 'Sin vacunas registradas', emptyIcon: Icons.vaccines, childId: widget.childId, onComplete: _triggerConfetti),
+                _VaccineList(vaccines: [...overdue, ...pending], emptyMessage: l10n.noVaccinesPending, emptyIcon: Icons.check_circle, childId: widget.childId, onComplete: _triggerConfetti),
+                _VaccineList(vaccines: completed, emptyMessage: l10n.noCompletedVaccines, emptyIcon: Icons.schedule, childId: widget.childId, onComplete: _triggerConfetti),
+                _VaccineList(vaccines: vaccines, emptyMessage: l10n.noVaccinesRegistered, emptyIcon: Icons.vaccines, childId: widget.childId, onComplete: _triggerConfetti),
               ],
             );
           },
           loading: () => _buildLoadingState(),
           error: (e, _) => Center(child: Text('Error: $e', style: TextStyle(color: isDark ? AppColors.darkTextSecondary : null))),
         ),
-        floatingActionButton: FloatingActionButton.extended(onPressed: () => _showAddVaccineSheet(context), icon: const Icon(Icons.add), label: const Text('Agregar'), backgroundColor: AppColors.warning),
+        floatingActionButton: FloatingActionButton.extended(onPressed: () => _showAddVaccineSheet(context), icon: const Icon(Icons.add), label: Text(l10n.add), backgroundColor: AppColors.warning),
       ),
     );
-  }
-
-  bool _isOverdue(int recommendedAgeMonths) {
-    final childAsync = ref.read(childProvider(widget.childId));
-    return childAsync.whenOrNull(data: (child) {
-      final now = DateTime.now();
-      final ageMonths = (now.year - child.birthDate.year) * 12 + now.month - child.birthDate.month;
-      return ageMonths > recommendedAgeMonths;
-    }) ?? false;
   }
 
   Widget _buildLoadingState() {
@@ -137,7 +149,7 @@ class _VaccinesContentState extends ConsumerState<_VaccinesContent> with SingleT
 }
 
 class _VaccineList extends StatelessWidget {
-  final List<VaccineWithDefinition> vaccines;
+  final List<VaccineScheduleItem> vaccines;
   final String emptyMessage;
   final IconData emptyIcon;
   final int childId;
@@ -156,7 +168,6 @@ class _VaccineList extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async {
         HapticFeedback.mediumImpact();
-        // Refresh logic
       },
       child: ListView.builder(
         physics: const BouncingScrollPhysics(),
@@ -164,29 +175,26 @@ class _VaccineList extends StatelessWidget {
         itemCount: vaccines.length,
         itemBuilder: (context, index) {
           final item = vaccines[index];
-          final isOverdue = item.appliedVaccine == null && _checkOverdue(item.definition.recommendedAgeMonths, context);
-          final isCompleted = item.appliedVaccine != null;
+          final l10n = AppLocalizations.of(context)!;
 
           return AnimatedListItem(
             index: index,
             child: SwipeToDeleteItem(
               onDelete: () async {
-                if (item.appliedVaccine != null) {
-                  final db = context.read<databaseProvider>();
-                  await db.deleteChildVaccine(item.appliedVaccine!.id);
+                if (item.mostRecentApplied != null) {
+                  final db = ProviderScope.containerOf(context).read(databaseProvider);
+                  await db.deleteChildVaccine(item.mostRecentApplied!.id);
                   if (context.mounted) {
                     HapticFeedback.mediumImpact();
-                    showUndoSnackbar(context, 'Vacuna eliminada', () {
+                    showUndoSnackbar(context, l10n.vaccineDeleted, () {
                       // Undo would re-insert
                     });
                   }
                 }
               },
-              deleteMessage: '¿Eliminar el registro de ${item.definition.name}?',
+              deleteMessage: l10n.deleteVaccineConfirm(item.definition.name),
               child: _VaccineCard(
                 item: item,
-                isOverdue: isOverdue,
-                isCompleted: isCompleted,
                 onTap: () => _showCompleteSheet(context, item),
                 isDark: isDark,
               ),
@@ -196,35 +204,28 @@ class _VaccineList extends StatelessWidget {
       ),
     );
   }
-
-  bool _checkOverdue(int recommendedAgeMonths, BuildContext context) {
-    final container = ProviderScope.containerOf(context);
-    final childAsync = container.read(childProvider(childId));
-    return childAsync.whenOrNull(data: (child) {
-      final now = DateTime.now();
-      final ageMonths = (now.year - child.birthDate.year) * 12 + now.month - child.birthDate.month;
-      return ageMonths > recommendedAgeMonths;
-    }) ?? false;
-  }
 }
 
 class _VaccineCard extends StatelessWidget {
-  final VaccineWithDefinition item;
-  final bool isOverdue;
-  final bool isCompleted;
+  final VaccineScheduleItem item;
   final VoidCallback onTap;
   final bool isDark;
 
-  const _VaccineCard({required this.item, required this.isOverdue, required this.isCompleted, required this.onTap, required this.isDark});
+  const _VaccineCard({required this.item, required this.onTap, required this.isDark});
 
-  Color get _statusColor => isCompleted ? AppColors.success : (isOverdue ? AppColors.error : AppColors.warning);
-  IconData get _statusIcon => isCompleted ? Icons.check_circle : (isOverdue ? Icons.warning : Icons.schedule);
-  String get _statusText => isCompleted ? 'Completada' : (isOverdue ? 'Atrasada' : 'Pendiente');
+  Color get _statusColor => item.isCompleted ? AppColors.success : (item.isOverdue ? AppColors.error : AppColors.warning);
+  IconData get _statusIcon => item.isCompleted ? Icons.check_circle : (item.isOverdue ? Icons.warning : Icons.schedule);
+  String get _statusText {
+    final l10n = AppLocalizations.of(context)!;
+    if (item.isCompleted) return l10n.completedStatus;
+    if (item.isOverdue) return l10n.overdueStatus;
+    return l10n.pendingStatus;
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isCompleted ? null : onTap,
+      onTap: item.isCompleted ? null : onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(20),
@@ -254,17 +255,17 @@ class _VaccineCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (isCompleted && item.appliedVaccine != null) ...[
+            if (item.isCompleted && item.mostRecentApplied != null) ...[
               const SizedBox(height: 12),
               Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: isDark ? AppColors.darkCardElevated : AppColors.grey10, borderRadius: BorderRadius.circular(12)), child: Row(children: [
                 Icon(Icons.calendar_today, size: 16, color: isDark ? AppColors.darkTextTertiary : AppColors.grey100),
                 const SizedBox(width: 8),
-                Text(DateFormat('dd MMM yyyy').format(item.appliedVaccine!.appliedDate), style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100)),
-                if (item.appliedVaccine!.batch != null) ...[const SizedBox(width: 16), Icon(Icons.qr_code, size: 16, color: isDark ? AppColors.darkTextTertiary : AppColors.grey100), const SizedBox(width: 4), Text('Lote: ${item.appliedVaccine!.batch}', style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100))],
-                if (item.appliedVaccine!.notes != null && item.appliedVaccine!.notes!.isNotEmpty) ...[const SizedBox(width: 16), Icon(Icons.notes, size: 16, color: isDark ? AppColors.darkTextTertiary : AppColors.grey100), const SizedBox(width: 4), Expanded(child: Text(item.appliedVaccine!.notes!, style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100), overflow: TextOverflow.ellipsis))],
+                Text(DateFormat('dd MMM yyyy').format(item.mostRecentApplied!.appliedDate), style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100)),
+                if (item.mostRecentApplied!.batch != null) ...[const SizedBox(width: 16), Icon(Icons.qr_code, size: 16, color: isDark ? AppColors.darkTextTertiary : AppColors.grey100), const SizedBox(width: 4), Text('Lote: ${item.mostRecentApplied!.batch}', style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100))],
+                if (item.mostRecentApplied!.notes != null && item.mostRecentApplied!.notes!.isNotEmpty) ...[const SizedBox(width: 16), Icon(Icons.notes, size: 16, color: isDark ? AppColors.darkTextTertiary : AppColors.grey100), const SizedBox(width: 4), Expanded(child: Text(item.mostRecentApplied!.notes!, style: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.grey100), overflow: TextOverflow.ellipsis))],
               ])),
             ],
-            if (!isCompleted) ...[
+            if (!item.isCompleted) ...[
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -286,7 +287,7 @@ class _VaccineCard extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════
 
 class _CompleteVaccineSheet extends ConsumerStatefulWidget {
-  final VaccineWithDefinition item;
+  final VaccineScheduleItem item;
   final int childId;
   const _CompleteVaccineSheet({required this.item, required this.childId});
 
@@ -321,7 +322,7 @@ class _CompleteVaccineSheetState extends ConsumerState<_CompleteVaccineSheet> {
     try {
       final db = ref.read(databaseProvider);
       await db.insertChildVaccine(ChildVaccinesCompanion.insert(childId: widget.childId, vaccineDefinitionId: widget.item.definition.id, appliedDate: _selectedDate, batch: _batchController.text.isEmpty ? const drift.Value(null) : drift.Value(_batchController.text), notes: _notesController.text.isEmpty ? const drift.Value(null) : drift.Value(_notesController.text)));
-      ref.invalidate(childVaccinesWithDefinitionsProvider(widget.childId));
+      ref.invalidate(vaccineScheduleProvider(widget.childId));
       if (mounted) {
         Navigator.pop(context);
         HapticFeedback.mediumImpact();
@@ -427,11 +428,11 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
     }
     final db = ref.read(databaseProvider);
     await db.insertChildVaccine(ChildVaccinesCompanion.insert(childId: widget.childId, vaccineDefinitionId: _selectedDefinitionId!, appliedDate: _selectedDate, batch: _batchController.text.isEmpty ? const drift.Value(null) : drift.Value(_batchController.text), notes: _notesController.text.isEmpty ? const drift.Value(null) : drift.Value(_notesController.text)));
-    ref.invalidate(childVaccinesWithDefinitionsProvider(widget.childId));
+    ref.invalidate(vaccineScheduleProvider(widget.childId));
     if (mounted) {
       Navigator.pop(context);
       HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacuna agregada')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.vaccineAddedSuccess)));
     }
   }
 
@@ -454,7 +455,7 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
                 children: [
                   definitionsAsync.when(
                     data: (definitions) => DropdownButtonFormField<int>(
-                      value: _selectedDefinitionId,
+                      initialValue: _selectedDefinitionId,
                       decoration: InputDecoration(labelText: 'Selecciona una vacuna', prefixIcon: const Icon(Icons.vaccines), filled: true, fillColor: isDark ? AppColors.darkCardElevated : AppColors.grey10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none)),
                       items: definitions.map((d) => DropdownMenuItem(value: d.id, child: Text('${d.name} - ${d.description ?? ""}'))).toList(),
                       onChanged: (v) => setState(() => _selectedDefinitionId = v),
@@ -498,7 +499,7 @@ class _AddVaccineSheetState extends ConsumerState<_AddVaccineSheet> {
   }
 }
 
-void _showCompleteSheet(BuildContext context, VaccineWithDefinition item) {
+void _showCompleteSheet(BuildContext context, VaccineScheduleItem item) {
   final container = ProviderScope.containerOf(context);
   final childId = container.read(selectedChildIdProvider);
   if (childId == null) return;

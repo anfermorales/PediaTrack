@@ -1,5 +1,6 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../shared/theme/app_colors.dart';
 
 /// Gráfica de crecimiento infantil con estilo moderno
@@ -11,21 +12,23 @@ class GrowthChartWidget extends StatelessWidget {
   final double? minY;
   final double? maxY;
 
-  const GrowthChartWidget({
+  GrowthChartWidget({
     super.key,
     required this.dataPoints,
-    this.percentileLines = const {
-      3: AppColors.chartP3,
-      15: AppColors.chartP15,
-      50: AppColors.chartP50,
-      85: AppColors.chartP85,
-      97: AppColors.chartP97,
-    },
+    Map<double, Color>? percentileLines,
     this.title = 'Crecimiento',
     this.unit = '',
     this.minY,
     this.maxY,
-  });
+  }) : percentileLines = percentileLines ?? _defaultPercentileLines;
+
+  static final Map<double, Color> _defaultPercentileLines = <double, Color>{
+    3: AppColors.chartP3,
+    15: AppColors.chartP15,
+    50: AppColors.chartP50,
+    85: AppColors.chartP85,
+    97: AppColors.chartP97,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +44,7 @@ class GrowthChartWidget extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.Color30.withValues(alpha: 0.5),
+          color: AppColors.grey30.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -182,7 +185,7 @@ class _GrowthChartPainter extends CustomPainter {
     final dates = dataPoints.map((e) => e.date).toList()..sort();
     final minDate = dates.first;
     final maxDate = dates.last;
-    final daysRange = maxDate.difference(minDate).inDays.toDouble().clamp(1, double.infinity);
+    final daysRange = maxDate.difference(minDate).inDays.toDouble().clamp(1.0, double.infinity);
 
     // Dibujar grid
     _drawGrid(canvas, size, leftPadding, chartWidth, chartHeight, minValue, maxValue, minDate, daysRange);
@@ -229,9 +232,9 @@ class _GrowthChartPainter extends CustomPainter {
         style: TextStyle(color: textColor, fontSize: 10),
       );
       final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      )..layout();
+          text: textSpan,
+          textDirection: ui.TextDirection.ltr,
+        )..layout();
       textPainter.paint(canvas, Offset(5, y - 6));
     }
 
@@ -252,7 +255,7 @@ class _GrowthChartPainter extends CustomPainter {
         );
         final textPainter = TextPainter(
           text: textSpan,
-          textDirection: TextDirection.ltr,
+          textDirection: ui.TextDirection.ltr,
         )..layout();
         textPainter.paint(canvas, Offset(x - 8, 10 + chartHeight + 8));
       }
@@ -353,7 +356,10 @@ class _GrowthChartPainter extends CustomPainter {
   }
 }
 
-/// Widget para mostrar el último valor de crecimiento con evaluación
+/// Widget deprecado: usa `GrowthValueCard` de `common_widgets.dart`
+/// Esta versión con clasificación fue reemplazada por la versión más rica
+/// (con soporte de tema oscuro) que vive en `common_widgets.dart`.
+@Deprecated('Usa GrowthValueCard de common_widgets.dart')
 class GrowthValueCard extends StatelessWidget {
   final String label;
   final double value;
@@ -375,7 +381,7 @@ class GrowthValueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = accentColor ?? AppColors.primaryMid;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -398,9 +404,9 @@ class GrowthValueCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  label.toLowerCase().contains('peso') 
-                    ?? Icons.monitor_weight_outlined 
-                    : Icons.straighten,
+                  label.toLowerCase().contains('peso')
+                      ? Icons.monitor_weight_outlined
+                      : Icons.straighten,
                   color: color,
                   size: 20,
                 ),
@@ -409,9 +415,9 @@ class GrowthValueCard extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.grey100,
-                  fontWeight: FontWeight.w500,
-                ),
+                      color: AppColors.grey100,
+                      fontWeight: FontWeight.w500,
+                    ),
               ),
             ],
           ),
@@ -422,9 +428,9 @@ class GrowthValueCard extends StatelessWidget {
               Text(
                 value.toStringAsFixed(1),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.grey500,
-                ),
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.grey500,
+                    ),
               ),
               const SizedBox(width: 4),
               Padding(
@@ -432,8 +438,8 @@ class GrowthValueCard extends StatelessWidget {
                 child: Text(
                   unit,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.grey100,
-                  ),
+                        color: AppColors.grey100,
+                      ),
                 ),
               ),
             ],
@@ -448,9 +454,9 @@ class GrowthValueCard extends StatelessWidget {
                   Text(
                     classification!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: _getClassificationColor(),
-                      fontWeight: FontWeight.w600,
-                    ),
+                          color: _getClassificationColor(),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 ],
               ],

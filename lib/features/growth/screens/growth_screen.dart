@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
 import 'package:pediatrack/data/database/app_database.dart';
+import 'package:pediatrack/l10n/generated/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/animations_widgets.dart';
 import '../../../shared/widgets/common_widgets.dart';
@@ -18,17 +20,18 @@ class GrowthScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedChildId = ref.watch(selectedChildIdProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (selectedChildId == null) {
       return Scaffold(
         backgroundColor: isDark ? AppColors.darkBackground : null,
-        appBar: AppBar(title: const Text('Crecimiento'), backgroundColor: isDark ? AppColors.darkSurface : null),
+        appBar: AppBar(title: Text(l10n.growth), backgroundColor: isDark ? AppColors.darkSurface : null),
         body: EmptyStateCard(
           icon: Icons.child_care,
-          title: 'Selecciona un niño',
-          subtitle: 'Elige un niño para ver su seguimiento de crecimiento',
+          title: l10n.selectChild,
+          subtitle: l10n.selectChildForGrowth,
           iconColor: AppColors.primaryMid,
         ),
       );
@@ -224,8 +227,7 @@ class _GrowthChartTab extends ConsumerWidget {
   double _calculateAgeInMonths(WidgetRef ref, int childId) {
     final childAsync = ref.read(childProvider(childId));
     return childAsync.whenOrNull(data: (child) {
-      final now = DateTime.now();
-      return (now.year - child.birthDate.year) * 12 + now.month - child.birthDate.month + (now.day - child.birthDate.day) / 30.0;
+      return AgeCalculator.exactMonths(child.birthDate);
     }) ?? 0;
   }
 }

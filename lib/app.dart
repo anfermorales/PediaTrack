@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pediatrack/core/constants/app_constants.dart';
 import 'package:pediatrack/core/theme/app_theme.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
 import 'package:pediatrack/core/services/backup_export_service.dart';
 import 'package:pediatrack/core/services/auto_backup_scheduler.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
 import 'package:pediatrack/core/widgets/who_growth_chart.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:intl/intl.dart';
@@ -22,6 +22,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pediatrack/enhanced_vaccines_screen.dart';
+import 'package:pediatrack/l10n/generated/app_localizations.dart';
 
 double _sheetBottomSpace(BuildContext context) => 10 + MediaQuery.of(context).viewPadding.bottom;
 
@@ -41,8 +42,9 @@ class _PediaTrackAppState extends ConsumerState<PediaTrackApp> {
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      supportedLocales: const [Locale('es', 'MX')],
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('es', 'MX'),
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
@@ -83,16 +85,16 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
       final shouldPop = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Salir'),
-          content: const Text('¿Estás seguro de que quieres salir de PediaTrack?'),
+          title: Text(AppLocalizations.of(context)!.exit),
+          content: Text(AppLocalizations.of(context)!.exitConfirm),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancelar'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Salir'),
+              child: Text(AppLocalizations.of(context)!.exit),
             ),
           ],
         ),
@@ -143,25 +145,25 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
           selectedIndex: currentIndex,
           onDestinationSelected: (index) => ref.read(navigationIndexProvider.notifier).state = index,
           destinations: [
-            const NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Inicio',
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home),
+              label: AppLocalizations.of(context)!.start,
             ),
-            const NavigationDestination(
-              icon: Icon(Icons.show_chart_outlined),
-              selectedIcon: Icon(Icons.show_chart),
-              label: 'Crecimiento',
+            NavigationDestination(
+              icon: const Icon(Icons.show_chart_outlined),
+              selectedIcon: const Icon(Icons.show_chart),
+              label: AppLocalizations.of(context)!.growth,
             ),
-            const NavigationDestination(
-              icon: Icon(Icons.bathroom_outlined),
-              selectedIcon: Icon(Icons.bathroom),
-              label: 'Hábitos',
+            NavigationDestination(
+              icon: const Icon(Icons.bathroom_outlined),
+              selectedIcon: const Icon(Icons.bathroom),
+              label: AppLocalizations.of(context)!.habits,
             ),
-            const NavigationDestination(
-              icon: Icon(Icons.vaccines_outlined),
-              selectedIcon: Icon(Icons.vaccines),
-              label: 'Vacunas',
+            NavigationDestination(
+              icon: const Icon(Icons.vaccines_outlined),
+              selectedIcon: const Icon(Icons.vaccines),
+              label: AppLocalizations.of(context)!.vaccines,
             ),
             NavigationDestination(
               icon: Badge(
@@ -174,7 +176,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
                 label: Text('$alertsCount'),
                 child: const Icon(Icons.notifications),
               ),
-              label: 'Alertas',
+              label: AppLocalizations.of(context)!.alerts,
             ),
           ],
         ),
@@ -234,7 +236,7 @@ appBar: AppBar(
               ),
             ),
             const SizedBox(width: 12),
-            const Text('PediaTrack'),
+            Text(AppLocalizations.of(context)!.appName),
           ],
         ),
         actions: [
@@ -268,8 +270,8 @@ appBar: AppBar(
               if (selectedChildId != null)
                 ..._buildSelectedChildContent(context, ref, selectedChildId),
               if (selectedChildId == null)
-                const SliverFillRemaining(
-                  child: Center(child: Text('Selecciona un niño para ver su información')),
+                SliverFillRemaining(
+                  child: Center(child: Text(AppLocalizations.of(context)!.selectChild)),
                 ),
             ],
           );
@@ -332,14 +334,14 @@ appBar: AppBar(
             ),
             const SizedBox(height: 32),
             Text(
-              '¡Bienvenido a PediaTrack!',
+              AppLocalizations.of(context)!.welcomeToPediaTrack,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Registra a tu primer niño para comenzar a monitorear su crecimiento y Hábitos.',
+              AppLocalizations.of(context)!.welcomeSubtitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
@@ -349,7 +351,7 @@ appBar: AppBar(
             FilledButton.icon(
               onPressed: () => _showAddChildDialog(context, ref),
               icon: const Icon(Icons.add),
-              label: const Text('Agregar Primer niño'),
+              label: Text(AppLocalizations.of(context)!.addFirstChild),
             ),
           ],
         ),
@@ -594,8 +596,7 @@ class _QuickStatsSection extends ConsumerWidget {
   }
 
   int _calculateAgeMonths(DateTime birthDate) {
-    final now = DateTime.now();
-    return (now.year - birthDate.year) * 12 + (now.month - birthDate.month);
+    return AgeCalculator.completedMonths(birthDate);
   }
 
   String _formatAge(int ageMonths) {
@@ -1657,8 +1658,7 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
   }
 
   int _calculateAgeMonths(DateTime birthDate) {
-    final now = DateTime.now();
-    return (now.year - birthDate.year) * 12 + (now.month - birthDate.month);
+    return AgeCalculator.completedMonths(birthDate);
   }
 
   Future<bool> _confirmDeleteGrowthRecord(BuildContext context) async {
@@ -3207,6 +3207,8 @@ Future<void> _saveChild() async {
           notes: notes.isEmpty ? const drift.Value.absent() : drift.Value(notes),
         );
         await db.updateChild(updatedChild);
+        ref.invalidate(childrenStreamProvider);
+        ref.invalidate(childProvider(widget.child!.id));
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -3790,7 +3792,7 @@ class _VaccineCard extends ConsumerWidget {
               if (item.definition.description != null) Text(item.definition.description!, style: const TextStyle(fontSize: 12)),
               Text(
                 item.isCompleted
-                    ? 'Aplicada: ${DateFormat('dd MMM yyyy', 'es').format(item.appliedVaccine!.appliedDate)}'
+                    ? 'Aplicada: ${DateFormat('dd MMM yyyy', 'es').format(item.mostRecentApplied!.appliedDate)}'
                     : 'Fecha: ${DateFormat('dd MMM yyyy', 'es').format(item.dueDate)} (${_formatVaccineAge(item.definition.recommendedAgeMonths)})',
                 style: TextStyle(fontSize: 11, color: statusColor),
               ),
@@ -3891,7 +3893,7 @@ Text(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               final db = ref.read(databaseProvider);
-              await db.deleteChildVaccine(item.appliedVaccine!.id);
+              await db.deleteChildVaccine(item.mostRecentApplied!.id);
               ref.invalidate(vaccineScheduleProvider(childId));
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
@@ -3903,9 +3905,9 @@ Text(
   }
 
   void _showEditAppliedDialog(BuildContext context, WidgetRef ref) {
-    DateTime selectedDate = item.appliedVaccine!.appliedDate;
-    final batchController = TextEditingController(text: item.appliedVaccine!.batch ?? '');
-    final notesController = TextEditingController(text: item.appliedVaccine!.notes ?? '');
+    DateTime selectedDate = item.mostRecentApplied!.appliedDate;
+    final batchController = TextEditingController(text: item.mostRecentApplied!.batch ?? '');
+    final notesController = TextEditingController(text: item.mostRecentApplied!.notes ?? '');
 
     showDialog(
       context: context,
@@ -3953,7 +3955,7 @@ Text(
             FilledButton(
               onPressed: () async {
                 final db = ref.read(databaseProvider);
-                await db.deleteChildVaccine(item.appliedVaccine!.id);
+                await db.deleteChildVaccine(item.mostRecentApplied!.id);
                 await db.insertChildVaccine(ChildVaccinesCompanion.insert(
                   childId: childId,
                   vaccineDefinitionId: item.definition.id,

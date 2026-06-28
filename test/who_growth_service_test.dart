@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
 
@@ -30,10 +31,12 @@ void main() {
           M: 10.0,
           S: 0.1,
         );
-        // z = ((v/M)^L - 1) / (L * S)
-        // z = ((12/10)^0.5 - 1) / (0.5 * 0.1) = ((1.095)^0.5 - 1) / 0.05
-        // z = (1.0466 - 1) / 0.05 = 0.0466 / 0.05 = 0.93
-        expect(zScore, closeTo(0.93, 0.1));
+        // Formula WHO (L != 0): z = ((v/M)^L - 1) / (L * S)
+        // v=12, M=10, L=0.5, S=0.1
+        // (12/10)^0.5 = 1.09545
+        // (1.09545 - 1) = 0.09545
+        // 0.09545 / (0.5 * 0.1) = 0.09545 / 0.05 = 1.909
+        expect(zScore, closeTo(1.909, 0.01));
       });
 
       test('handles values below mean with negative z-score', () {
@@ -185,18 +188,4 @@ void main() {
       expect(chartData.percentile, equals(50));
     });
   });
-}
-
-// Helper for GrowthChartData test
-class Colors {
-  static const Color green = Color(0xFF00FF00);
-}
-
-class Color {
-  final int value;
-  const Color(this.value);
-}
-
-extension ColorExtension on Color {
-  int get red => (value >> 16) & 0xFF;
 }

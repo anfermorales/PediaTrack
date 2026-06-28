@@ -1,0 +1,403 @@
+{
+  "@@locale": "en",
+  "appName": "PediaTrack",
+  "@appName": {
+    "description": "The application name"
+  },
+  "start": "Home",
+  "growth": "Growth",
+  "habits": "Habits",
+  "vaccines": "Vaccines",
+  "alerts": "Alerts",
+  "exit": "Exit",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "register": "Register",
+  "confirm": "Confirm",
+  "exitConfirm": "Are you sure you want to exit PediaTrack?",
+  "childName": "Name",
+  "birthDate": "Birth Date",
+  "gender": "Gender",
+  "selectChild": "Select a child to view their information",
+  "selectChildForGrowth": "Select a child to view their growth",
+  "selectChildForHabits": "Select a child to view their habits",
+  "selectChildForAlerts": "Select a child to view their health alerts",
+  "selectChildForVaccines": "Select a child to view their vaccines",
+  "welcomeToPediaTrack": "Welcome to PediaTrack!",
+  "welcomeSubtitle": "Register your first child to start monitoring their growth and habits.",
+  "addFirstChild": "Add First Child",
+  "selectChildTitle": "Select Child",
+  "noChildSelected": "Select a child to view their information",
+  "quickSuggestion": "Quick suggestion",
+  "quickSuggestionSubtitle": "For easier registration",
+  "quickSuggestionHint": "Use the \"Register\" button to save Consultation or Habit from any main screen.",
+  "noData": "No data",
+  "withoutData": "No data",
+  "error": "Error",
+  "age": "Age",
+  "weight": "Weight",
+  "height": "Height",
+  "birthWeight": "Birth weight",
+  "birthHeight": "Birth height",
+  "birthData": "Birth Data",
+  "birthDataSubtitle": "Initial record",
+  "birthRecord": "Initial record",
+  "growth": "Growth",
+  "recentGrowth": "Recent Growth",
+  "lastRecord": "Last record: {date}",
+  "@lastRecord": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noGrowthRecords": "No growth records",
+  "addRecord": "Add record",
+  "showRecords": "Show:",
+  "fiveRecords": "5 records",
+  "tenRecords": "10 records",
+  "twentyRecords": "20 records",
+  "allRecords": "All",
+  "recentRecords": "Recent Records",
+  "whoGrowthCurves": "WHO Growth Curves",
+  "weightCurve": "Weight Curve",
+  "heightCurve": "Height Curve",
+  "compareWithWHO": "Comparison with WHO curves",
+  "growthHistory": "Growth History",
+  "monthsOfAge": "{months} months of age",
+  "@monthsOfAge": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteRecord": "Delete record",
+  "deleteRecordConfirm": "Are you sure you want to delete this growth record?",
+  "habitsOfToday": "Today's Habits",
+  "noRecordsToday": "No records today",
+  "todayRecords": "{count} records",
+  "@todayRecords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "registerIntestinalHabits": "Register today's intestinal habits.",
+  "vaccineTitle": "Vaccines",
+  "vaccinesCompleted": "{completed} completed, {upcoming} upcoming, {overdue} overdue",
+  "@vaccinesCompleted": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "upcoming": {
+        "type": "int"
+      },
+      "overdue": {
+        "type": "int"
+      }
+    }
+  },
+  "overdueVaccines": "{count} overdue vaccine(s)",
+  "@overdueVaccines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "upcomingVaccines": "{count} upcoming vaccine(s) this month",
+  "@upcomingVaccines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "measureRecord": "Record Measures",
+  "heightCm": "Height (cm)",
+  "headCircumference": "Head circumference (cm)",
+  "bothFieldsOptional": "Both fields are optional",
+  "enterAtLeastOneMeasure": "Enter at least one measure",
+  "measuresRegistered": "Measures registered",
+  "measureUnit": "cm",
+  "weightUnit": "lb",
+  "date": "Date",
+  "settings": "Settings",
+  "autoBackup": "Automatic Backup",
+  "autoBackupTitle": "Automatic backup",
+  "autoBackupSubtitle": "Create backup daily",
+  "backupTime": "Backup time",
+  "backupFolder": "Backup folder",
+  "folderName": "Folder name",
+  "folderHint": "e.g., PediaTrack",
+  "nextBackup": "Next backup",
+  "runNow": "Run now",
+  "runNowSubtitle": "Generate backup manually",
+  "forceAutoBackup": "Force automatic backup",
+  "forceAutoBackupSubtitle": "Backup system test",
+  "lastBackup": "Last backup",
+  "lastBackupAuto": "Last automatic",
+  "lastBackupManual": "Last manual",
+  "automaticLabel": "Automatic",
+  "manualLabel": "Manual",
+  "generatingBackup": "Generating backup...",
+  "backupGenerated": "Backup saved at: {path}",
+  "@backupGenerated": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "nextBackupScheduled": "Next backup: {datetime}",
+  "@nextBackupScheduled": {
+    "placeholders": {
+      "datetime": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImport": "Export / Import",
+  "exportData": "Export data",
+  "exportDataSubtitle": "Share or download JSON and Excel backup",
+  "importBackup": "Import backup",
+  "importBackupSubtitle": "Load a JSON backup file",
+  "importBackupConfirm": "This will replace all current data. Continue?",
+  "importSuccess": "Backup imported successfully",
+  "shareJson": "Share JSON",
+  "shareJsonSubtitle": "Send via email or WhatsApp",
+  "downloadJson": "Download JSON",
+  "downloadJsonSubtitle": "Save file locally",
+  "shareExcel": "Share Excel",
+  "shareExcelSubtitle": "Send via email or WhatsApp",
+  "downloadExcel": "Download Excel",
+  "downloadExcelSubtitle": "Save file locally",
+  "backupReadyToShare": "JSON backup ready to share",
+  "backupReadyToShareExcel": "Excel backup ready to share",
+  "exportError": "Could not export: {error}",
+  "@exportError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "saveBackup": "Save backup",
+  "jsonBackupSaved": "Backup saved at: {path}",
+  "@jsonBackupSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "excelSaved": "Excel saved at: {path}",
+  "@excelSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "about": "About",
+  "version": "Version",
+  "versionNumber": "1.0.0",
+  "developedWith": "Developed with",
+  "developedWithValue": "Flutter + Riverpod",
+  "child": "child",
+  "childNotFound": "child not found",
+  "masculine": "Male",
+  "femenine": "Female",
+  "boy": "Boy",
+  "girl": "Girl",
+  "habitType": "Habit type",
+  "normalEvacuation": "Normal evacuation",
+  "constipation": "Constipation",
+  "diarrhea": "Diarrhea",
+  "feeding": "Feeding",
+  "sleep": "Sleep",
+  "hydration": "Hydration",
+  "medication": "Medication",
+  "otherHabit": "Other habit",
+  "observations": "Observations (optional)",
+  "observationsOptional": "Observations (optional)",
+  "addChild": "Add child",
+  "editChild": "Edit child",
+  "enterChildName": "Enter the child's name",
+  "childAdded": "{name} added successfully",
+  "@childAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "childUpdated": "{name} updated successfully",
+  "@childUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "consultationRecord": "Consultation Record",
+  "weightHeightHead": "Weight, Height and Head Circumference",
+  "enterAtLeastOneValue": "Enter at least one value. Others are optional.",
+  "recordSaved": "Record saved successfully",
+  "registerHabit": "Register Habit",
+  "selectHabit": "Select habit",
+  "habitRegistered": "Habit registered successfully",
+  "stats": "Statistics",
+  "noEnoughData": "Not enough data",
+  "registerDaysForStats": "Register at least 3 days to see statistics",
+  "frequency": "Frequency",
+  "total": "Total",
+  "constipationDays": "Constipation",
+  "timesPerWeek": "times/week",
+  "records": "records",
+  "days": "days",
+  "distribution": "Distribution:",
+  "normal": "Normal",
+  "evaluating": "Evaluating...",
+  "noPreviousData": "No previous data",
+  "improving": "Improving",
+  "worsening": "Worsening",
+  "noChanges": "No changes",
+  "historyOfDefecations": "Defecation History",
+  "historySubtitle": "Complete record",
+  "noRecords": "No records",
+  "recordsCount": "{count} record(s)",
+  "@recordsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteHabit": "Delete habit",
+  "deleteHabitConfirm": "Are you sure you want to delete this habit record?",
+  "editHabit": "Edit habit",
+  "dateAndTime": "Date and time",
+  "emptyAlerts": "No Alerts!",
+  "noPendingNotifications": "No pending notifications",
+  "noAlertsForSelectedChild": "No alerts for the selected child",
+  "dose": "Dose {current}/{total}",
+  "@dose": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "pending": "Pending",
+  "completed": "Completed",
+  "all": "All",
+  "completedStatus": "Completed",
+  "overdueStatus": "Overdue",
+  "pendingStatus": "Pending",
+  "recommendedDate": "Recommended date",
+  "applied": "Applied",
+  "touchToRegister": "Tap to register",
+  "editVaccine": "Edit Vaccine",
+  "registerVaccine": "Register Vaccine",
+  "vaccine": "Vaccine",
+  "batchOptional": "Batch (optional)",
+  "batchNumber": "Batch number (optional)",
+  "vaccineUpdated": "Vaccine updated",
+  "vaccineRegistered": "Vaccine registered",
+  "vaccine": "Vaccine",
+  "recordsTitle": "Records",
+  "currentWeight": "Current weight",
+  "currentHeight": "Current height",
+  "currentRecords": "{count} records",
+  "@currentRecords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "atBirth": "at birth",
+  "atMonth": "at 1 month",
+  "atMonths": "at {months} months",
+  "@atMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "atYear": "at 1 year",
+  "atYears": "at {years} years",
+  "@atYears": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "atYearsAndMonths": "at {years} years and {months} months",
+  "@atYearsAndMonths": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "atYearsAndOneMonth": "at {years} years and 1 month",
+  "@atYearsAndOneMonth": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "intestinalHabitControl": "Intestinal Habits Control",
+  "recommendedAtMonths": "Recommended at {months} months",
+  "@recommendedAtMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "vaccineAdded": "Vaccine registered!",
+  "addVaccine": "Add",
+  "addVaccineTitle": "Add Vaccine",
+  "selectVaccine": "Select a vaccine",
+  "vaccineAddedSuccess": "Vaccine added",
+  "vaccineDeleted": "Vaccine deleted",
+  "deleteVaccineConfirm": "Delete the record for {name}?",
+  "@deleteVaccineConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noVaccinesPending": "No pending vaccines!",
+  "noCompletedVaccines": "No completed vaccines yet",
+  "noVaccinesRegistered": "No vaccines registered",
+  "addFirstVaccines": "Add the first vaccines to start tracking",
+  "loading": "Loading...",
+  "searchingChild": "Searching child...",
+  "years": "years",
+  "year": "year",
+  "months": "months",
+  "month": "month",
+  "lb": "lb",
+  "cm": "cm"
+}

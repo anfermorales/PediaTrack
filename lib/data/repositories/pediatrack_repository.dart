@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:pediatrack/core/models/app_models.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
+import 'package:pediatrack/core/utils/vaccine_status_calculator.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 
 class PediaTrackRepository {
@@ -102,12 +104,21 @@ class PediaTrackRepository {
     for (final def in definitions) {
       final applied = appliedVaccines.where((av) => av.vaccineDefinitionId == def.id).toList();
       final isCompleted = applied.isNotEmpty;
-      final dueDate = child.birthDate.add(Duration(days: def.recommendedAgeMonths * 30));
+      final dueDate = VaccineStatusCalculator.dueDateFor(
+        birthDate: child.birthDate,
+        recommendedAgeMonths: def.recommendedAgeMonths,
+      );
+      final isOverdue = VaccineStatusCalculator.isOverdue(
+        birthDate: child.birthDate,
+        recommendedAgeMonths: def.recommendedAgeMonths,
+        isCompleted: isCompleted,
+        now: now,
+      );
       schedule.add(VaccineScheduleItem(
         definition: def,
-        appliedVaccine: applied.isNotEmpty ? applied.first : null,
+        appliedVaccines: applied,
         dueDate: dueDate,
-        isOverdue: !isCompleted && now.isAfter(dueDate),
+        isOverdue: isOverdue,
         isCompleted: isCompleted,
       ));
     }
@@ -158,7 +169,7 @@ class PediaTrackRepository {
       final growthRecords = await _db.getGrowthRecordsForChild(child.id);
       if (growthRecords.isNotEmpty) {
         final latest = growthRecords.first;
-        final ageMonths = ((now.year - child.birthDate.year) * 12 + (now.month - child.birthDate.month)).clamp(0, 60);
+        final ageMonths = AgeCalculator.completedMonths(child.birthDate).clamp(0, 60);
 
         if (latest.weight != null) {
           final weightEval = _growthService.evaluate(

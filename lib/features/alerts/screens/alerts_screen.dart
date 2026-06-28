@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
 import 'package:pediatrack/data/database/app_database.dart';
+import 'package:pediatrack/l10n/generated/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/animations_widgets.dart';
 import '../../../shared/widgets/common_widgets.dart';
@@ -13,17 +14,18 @@ class AlertsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedChildId = ref.watch(selectedChildIdProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (selectedChildId == null) {
       return Scaffold(
         backgroundColor: isDark ? AppColors.darkBackground : null,
-        appBar: AppBar(title: const Text('Alertas'), backgroundColor: isDark ? AppColors.darkSurface : null),
+        appBar: AppBar(title: Text(l10n.alerts), backgroundColor: isDark ? AppColors.darkSurface : null),
         body: EmptyStateCard(
           icon: Icons.notifications_none,
-          title: 'Selecciona un niño',
-          subtitle: 'Elige un niño para ver sus alertas de salud',
+          title: l10n.selectChild,
+          subtitle: l10n.selectChildForAlerts,
           iconColor: AppColors.primaryMid,
         ),
       );

@@ -1,3 +1,21 @@
+// =============================================================================
+// ARCHIVO NO UTILIZADO EN LA APP ACTIVA.
+// -----------------------------------------------------------------------------
+// La version que se renderiza en `MainNavigation` esta definida inline en
+// `lib/app.dart` (clase `HomeScreen` dentro del archivo `app.dart`). Este
+// archivo fue un intento previo de modularizar pantallas que no llego a
+// activarse.
+//
+// Mantener este archivo aqui (en lugar de eliminarlo) conserva:
+//   * Las mejoras aplicadas (centralizacion de `VaccineStatusCalculator`,
+//     tipos corregidos, l10n, etc.) como punto de referencia para cuando se
+//     haga la migracion final.
+//   * Cobertura parcial del codigo de features.
+//
+// TODO: Mover la clase `HomeScreen` desde `app.dart` a este archivo y
+// actualizar `MainNavigation` para que importe desde `features/home/screens/`.
+// =============================================================================
+
 import 'dart:math' as math;
 
 import 'package:drift/drift.dart' as drift;
@@ -6,6 +24,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/animations_widgets.dart';
@@ -364,9 +383,9 @@ class _QuickStatsSection extends ConsumerWidget {
                   decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
                   child: Row(
                     children: [
-                      Icon(child.gender == 'M' ? Icons.male : Icons.female, color: Colors.white, size: 18),
+                      Icon(child.gender == 0 ? Icons.male : Icons.female, color: Colors.white, size: 18),
                       const SizedBox(width: 4),
-                      Text(child.gender == 'M' ? 'Niño' : 'Niña', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      Text(child.gender == 0 ? 'Niño' : 'Niña', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
@@ -382,7 +401,7 @@ class _QuickStatsSection extends ConsumerWidget {
 
   String _calculateAge(DateTime birthDate) {
     final now = DateTime.now();
-    final months = (now.year - birthDate.year) * 12 + now.month - birthDate.month;
+    final months = AgeCalculator.completedMonths(birthDate, reference: now);
     if (months < 1) return '${now.difference(birthDate).inDays} días';
     if (months < 12) return '$months meses';
     final years = months ~/ 12;
@@ -531,7 +550,7 @@ class _RecentGrowthCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final growthAsync = ref.watch(growthRecordsProvider(childId));
+    final growthAsync = ref.watch(growthRecordsStreamProvider(childId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -697,7 +716,7 @@ class _VaccineSummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vaccinesAsync = ref.watch(childVaccinesWithDefinitionsProvider(childId));
+    final vaccinesAsync = ref.watch(vaccineScheduleProvider(childId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -722,7 +741,7 @@ class _VaccineSummaryCard extends ConsumerWidget {
             const SizedBox(height: 16),
             vaccinesAsync.when(
               data: (vaccines) {
-                final completed = vaccines.where((v) => v.appliedVaccine != null).length;
+                final completed = vaccines.where((v) => v.mostRecentApplied != null).length;
                 final total = vaccines.length;
                 return Row(
                   children: [
@@ -861,7 +880,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
   final _heightController = TextEditingController();
   final _notesController = TextEditingController();
   DateTime _birthDate = DateTime.now();
-  String _gender = 'M';
+  int _gender = 0;
   bool get _isEditing => widget.child != null;
 
   @override
@@ -908,8 +927,10 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
       if (_weightController.text.isNotEmpty || _heightController.text.isNotEmpty) {
         await db.updateChildBirthData(widget.child!.id, double.tryParse(_weightController.text), double.tryParse(_heightController.text));
       }
+      ref.invalidate(childrenStreamProvider);
+      ref.invalidate(childProvider(widget.child!.id));
     } else {
-      final childId = await db.insertChild(ChildrenCompanion.insert(
+      await db.insertChild(ChildrenCompanion.insert(
         name: _nameController.text.trim(),
         birthDate: _birthDate,
         gender: _gender,
@@ -917,6 +938,7 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
         birthHeight: Value(_heightController.text.isNotEmpty ? double.tryParse(_heightController.text) : null),
         notes: Value(_notesController.text.trim().isEmpty ? null : _notesController.text.trim()),
       ));
+      ref.invalidate(childrenStreamProvider);
     }
     if (mounted) {
       Navigator.pop(context);
@@ -974,9 +996,9 @@ class _AddChildSheetState extends ConsumerState<AddChildSheet> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: _GenderButton(gender: 'M', label: 'Niño', icon: Icons.male, isSelected: _gender == 'M', onTap: () => setState(() => _gender = 'M'), isDark: isDark)),
+                      Expanded(child: _GenderButton(gender: 0, label: 'Niño', icon: Icons.male, isSelected: _gender == 0, onTap: () => setState(() => _gender = 0), isDark: isDark)),
                       const SizedBox(width: 12),
-                      Expanded(child: _GenderButton(gender: 'F', label: 'Niña', icon: Icons.female, isSelected: _gender == 'F', onTap: () => setState(() => _gender = 'F'), isDark: isDark)),
+                      Expanded(child: _GenderButton(gender: 1, label: 'Niña', icon: Icons.female, isSelected: _gender == 1, onTap: () => setState(() => _gender = 1), isDark: isDark)),
                     ],
                   ),
                   const SizedBox(height: 16),

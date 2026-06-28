@@ -1,7 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:pediatrack/core/providers/database_providers.dart';
+import 'package:pediatrack/core/services/who_growth_service.dart';
+import 'package:pediatrack/data/database/app_database.dart';
 
 void main() {
   group('themeModeProvider', () {
@@ -118,10 +120,29 @@ void main() {
   });
 
   group('VaccineScheduleItem', () {
+    final mockDefinition = VaccineDefinition(
+      id: 1,
+      name: 'BCG',
+      recommendedAgeMonths: 0,
+      doseNumber: 1,
+      totalDoses: 1,
+      category: 'BCG',
+    );
+
+    ChildVaccine buildChildVaccine({required int id, int defId = 1}) {
+      return ChildVaccine(
+        id: id,
+        childId: 1,
+        vaccineDefinitionId: defId,
+        appliedDate: DateTime.now(),
+        createdAt: DateTime.now(),
+      );
+    }
+
     test('creates item with completed vaccine', () {
       final item = VaccineScheduleItem(
-        definition: _createMockDefinition(),
-        appliedVaccine: _createMockVaccine(),
+        definition: mockDefinition,
+        appliedVaccines: [buildChildVaccine(id: 1)],
         dueDate: DateTime(2024, 1, 1),
         isOverdue: false,
         isCompleted: true,
@@ -129,13 +150,14 @@ void main() {
 
       expect(item.isCompleted, isTrue);
       expect(item.isOverdue, isFalse);
-      expect(item.appliedVaccine, isNotNull);
+      expect(item.appliedVaccines, hasLength(1));
+      expect(item.mostRecentApplied, isNotNull);
     });
 
     test('creates item with pending vaccine', () {
       final item = VaccineScheduleItem(
-        definition: _createMockDefinition(),
-        appliedVaccine: null,
+        definition: mockDefinition,
+        appliedVaccines: const [],
         dueDate: DateTime.now().add(const Duration(days: 30)),
         isOverdue: false,
         isCompleted: false,
@@ -143,13 +165,14 @@ void main() {
 
       expect(item.isCompleted, isFalse);
       expect(item.isOverdue, isFalse);
-      expect(item.appliedVaccine, isNull);
+      expect(item.appliedVaccines, isEmpty);
+      expect(item.mostRecentApplied, isNull);
     });
 
     test('creates item with overdue vaccine', () {
       final item = VaccineScheduleItem(
-        definition: _createMockDefinition(),
-        appliedVaccine: null,
+        definition: mockDefinition,
+        appliedVaccines: const [],
         dueDate: DateTime.now().subtract(const Duration(days: 7)),
         isOverdue: true,
         isCompleted: false,
@@ -160,25 +183,3 @@ void main() {
     });
   });
 }
-
-// Mock classes para tests
-class _MockDefinition {
-  final int id = 1;
-  final String name = 'BCG';
-  final int recommendedAgeMonths = 0;
-  final int doseNumber = 1;
-  final int totalDoses = 1;
-}
-
-_MockDefinition _createMockDefinition() => _MockDefinition();
-
-class _MockVaccine {
-  final int id = 1;
-  final int vaccineDefinitionId = 1;
-  final DateTime appliedDate = DateTime.now();
-}
-
-_MockVaccine _createMockVaccine() => _MockVaccine();
-
-// Placeholder for GrowthType - need to import
-enum GrowthType { weight, height }

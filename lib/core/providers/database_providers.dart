@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pediatrack/data/database/app_database.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
+import 'package:pediatrack/core/utils/vaccine_status_calculator.dart';
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -149,7 +151,7 @@ final alertsProvider = FutureProvider<List<AppAlert>>((ref) async {
     final growthRecords = await db.getGrowthRecordsForChild(child.id);
     if (growthRecords.isNotEmpty) {
       final latest = growthRecords.first;
-      final ageMonths = ((now.year - child.birthDate.year) * 12 + (now.month - child.birthDate.month)).clamp(0, 60);
+      final ageMonths = AgeCalculator.completedMonths(child.birthDate).clamp(0, 60);
 
       if (latest.weight != null) {
         final weightEval = service.evaluate(
@@ -266,18 +268,22 @@ final childVaccinesProvider =
 
 class VaccineScheduleItem {
   final VaccineDefinition definition;
-  final ChildVaccine? appliedVaccine;
+  final List<ChildVaccine> appliedVaccines;
   final DateTime dueDate;
   final bool isOverdue;
   final bool isCompleted;
 
   VaccineScheduleItem({
     required this.definition,
-    this.appliedVaccine,
+    this.appliedVaccines = const [],
     required this.dueDate,
     required this.isOverdue,
     required this.isCompleted,
   });
+
+  /// Returns the most recent applied vaccine, or null if none applied.
+  ChildVaccine? get mostRecentApplied =>
+      appliedVaccines.isEmpty ? null : appliedVaccines.first;
 }
 
 final vaccineScheduleProvider = FutureProvider.family<List<VaccineScheduleItem>, int>((ref, childId) async {
@@ -288,7 +294,10 @@ final vaccineScheduleProvider = FutureProvider.family<List<VaccineScheduleItem>,
   final definitions = await db.getAllVaccineDefinitions();
   final appliedVaccines = await db.getChildVaccines(childId);
 
-  final ageInMonths = DateTime.now().difference(child.birthDate).inDays ~/ 30;
+  // Order by date descending so the most recent is first
+  appliedVaccines.sort((a, b) => b.appliedDate.compareTo(a.appliedDate));
+
+  final ageInMonths = AgeCalculator.completedMonths(child.birthDate);
 
   final schedule = <VaccineScheduleItem>[];
   for (final def in definitions) {
@@ -297,12 +306,19 @@ final vaccineScheduleProvider = FutureProvider.family<List<VaccineScheduleItem>,
         .toList();
 
     final isCompleted = applied.isNotEmpty;
-    final dueDate = child.birthDate.add(Duration(days: def.recommendedAgeMonths * 30));
-    final isOverdue = !isCompleted && DateTime.now().isAfter(dueDate);
+    final dueDate = VaccineStatusCalculator.dueDateFor(
+      birthDate: child.birthDate,
+      recommendedAgeMonths: def.recommendedAgeMonths,
+    );
+    final isOverdue = VaccineStatusCalculator.isOverdue(
+      birthDate: child.birthDate,
+      recommendedAgeMonths: def.recommendedAgeMonths,
+      isCompleted: isCompleted,
+    );
 
     schedule.add(VaccineScheduleItem(
       definition: def,
-      appliedVaccine: applied.isNotEmpty ? applied.first : null,
+      appliedVaccines: applied,
       dueDate: dueDate,
       isOverdue: isOverdue,
       isCompleted: isCompleted,

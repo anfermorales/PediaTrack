@@ -78,7 +78,7 @@ class AppTheme {
         color: _surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: _primaryColor.withOpacity(0.15)),
+          side: BorderSide(color: _primaryColor.withValues(alpha: 0.15)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -116,7 +116,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          side: BorderSide(color: _primaryColor.withOpacity(0.5)),
+          side: BorderSide(color: _primaryColor.withValues(alpha: 0.5)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -138,7 +138,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: _backgroundColor,
-        selectedColor: _primaryColor.withOpacity(0.15),
+        selectedColor: _primaryColor.withValues(alpha: 0.15),
         labelStyle: GoogleFonts.nunito(color: _textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -146,7 +146,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: _surfaceColor,
-        indicatorColor: _primaryColor.withOpacity(0.15),
+        indicatorColor: _primaryColor.withValues(alpha: 0.15),
         elevation: 0,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -261,7 +261,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          side: BorderSide(color: _primaryColor.withOpacity(0.5)),
+          side: BorderSide(color: _primaryColor.withValues(alpha: 0.5)),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -274,7 +274,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkSurface,
-        indicatorColor: _primaryColor.withOpacity(0.25),
+        indicatorColor: _primaryColor.withValues(alpha: 0.25),
         elevation: 0,
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:pediatrack/core/services/who_growth_service.dart';
+import 'package:pediatrack/core/utils/age_calculator.dart';
 
 class WhoGrowthChart extends StatelessWidget {
   const WhoGrowthChart({
@@ -248,7 +249,7 @@ class WhoGrowthChart extends StatelessWidget {
   }
 
   int _calculateAgeMonths(DateTime recordDate) {
-    return (recordDate.year - birthDate.year) * 12 + (recordDate.month - birthDate.month);
+    return AgeCalculator.completedMonths(birthDate, reference: recordDate);
   }
 }
 

@@ -61,7 +61,7 @@ class MainNavigation extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationState extends ConsumerState<MainNavigation> {
-  bool _handlingBack = false;
+  DateTime? _lastBackPress;
 
   @override
   void initState() {
@@ -72,44 +72,34 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     });
   }
 
-  Future<void> _handleBackPressed() async {
-    if (_handlingBack || !mounted) return;
-    _handlingBack = true;
-    try {
-      final currentIndex = ref.read(navigationIndexProvider);
-      if (currentIndex != 0) {
-        ref.read(navigationIndexProvider.notifier).state = 0;
-        return;
-      }
+  void _handleBackPressed() {
+    final currentIndex = ref.read(navigationIndexProvider);
+    if (currentIndex != 0) {
+      ref.read(navigationIndexProvider.notifier).state = 0;
+      return;
+    }
 
-      final shouldPop = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(AppLocalizations.of(context)!.exit),
-          content: Text(AppLocalizations.of(context)!.exitConfirm),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(AppLocalizations.of(context)!.exit),
-            ),
-          ],
+    final now = DateTime.now();
+    if (_lastBackPress != null &&
+        now.difference(_lastBackPress!) <= const Duration(seconds: 2)) {
+      _lastBackPress = null;
+      try {
+        SystemNavigator.pop();
+      } catch (e) {
+        debugPrint('Error calling SystemNavigator.pop(): $e');
+      }
+      return;
+    }
+    _lastBackPress = now;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.pressBackAgainToExit),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
         ),
       );
-
-      if (shouldPop == true && mounted) {
-        try {
-          await SystemNavigator.pop();
-        } catch (e) {
-          debugPrint('Error calling SystemNavigator.pop(): $e');
-        }
-      }
-} finally {
-      _handlingBack = false;
-    }
   }
 
   void _showSettingsSheet(BuildContext context, WidgetRef ref) {

@@ -54,6 +54,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exitConfirm => '¿Estás seguro de que quieres salir de PediaTrack?';
 
   @override
+  String get pressBackAgainToExit => 'Presiona de nuevo para salir';
+
+  @override
   String get childName => 'Nombre';
 
   @override

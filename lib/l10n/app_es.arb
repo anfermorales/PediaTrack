@@ -18,6 +18,7 @@
   "register": "Registrar",
   "confirm": "Confirmar",
   "exitConfirm": "¿Estás seguro de que quieres salir de PediaTrack?",
+  "pressBackAgainToExit": "Presiona de nuevo para salir",
   "childName": "Nombre",
   "birthDate": "Fecha de Nacimiento",
   "gender": "Género",

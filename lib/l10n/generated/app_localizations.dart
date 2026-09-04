@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'¿Estás seguro de que quieres salir de PediaTrack?'**
   String get exitConfirm;
 
+  /// No description provided for @pressBackAgainToExit.
+  ///
+  /// In es, this message translates to:
+  /// **'Presiona de nuevo para salir'**
+  String get pressBackAgainToExit;
+
   /// No description provided for @childName.
   ///
   /// In es, this message translates to:
